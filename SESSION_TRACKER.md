@@ -169,34 +169,35 @@
 ---
 
 ### SESSION 5 — Gemini AI Integration (All 4 Insight Types)
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 4 complete
 
 **Goal:** Full AI pipeline — prompt building, Gemini calls, JSON parsing, caching
 
 **What was built:**
-- [ ] `AIInsight.model.js` (with expiresAt TTL index)
-- [ ] `gemini.service.js`
-  - [ ] generateSprintSummary() with prompt from promptBuilder
-  - [ ] generateBottleneckAnalysis()
-  - [ ] generateContributorAnalysis()
-  - [ ] generateRecommendations()
-  - [ ] JSON validation + retry once on invalid JSON
-  - [ ] Fallback error object if retry fails
-- [ ] `insight.service.js` — cache check logic (TTL 24h)
-- [ ] `promptBuilder.js` — all 4 prompt templates (JSON-only responses)
-- [ ] `ai.routes.js` and `ai.controller.js`
-- [ ] POST /ai/repos/:repoId/summarize
-- [ ] POST /ai/repos/:repoId/bottlenecks
-- [ ] POST /ai/repos/:repoId/contributors
-- [ ] POST /ai/repos/:repoId/recommendations
-- [ ] GET /ai/repos/:repoId/insights (all cached insights)
-- [ ] `?force=true` param bypasses cache
+- [x] `AIInsight.model.js` (with expiresAt TTL index)
+- [x] `gemini.service.js`
+  - [x] generateSprintSummary() with prompt from promptBuilder
+  - [x] generateBottleneckAnalysis()
+  - [x] generateContributorAnalysis()
+  - [x] generateRecommendations()
+  - [x] JSON validation + retry once on invalid JSON
+  - [x] Fallback error object if retry fails
+- [x] `insight.service.js` — cache check logic (TTL 24h)
+- [x] `promptBuilder.js` — all 4 prompt templates (JSON-only responses)
+- [x] `ai.routes.js` and `ai.controller.js`
+- [x] POST /ai/repos/:repoId/summarize
+- [x] POST /ai/repos/:repoId/bottlenecks
+- [x] POST /ai/repos/:repoId/contributors
+- [x] POST /ai/repos/:repoId/recommendations
+- [x] GET /ai/repos/:repoId/insights (all cached insights)
+- [x] `?force=true` param bypasses cache
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- Mocked Gemini client completely in unit/integration tests to ensure no real network calls or quota depletion during testing.
+- AI route requires user authentication and checks repository ownership permissions consistently.
+- Default values and fallback objects conform strictly to standard high-fidelity schemas.
+
 
 ---
 
@@ -377,14 +378,14 @@ Session 1  [Auth + Docker]          ██████████  10%
 Session 2  [GitHub OAuth]           ██████████  10%
 Session 3  [Sync Engine]            ██████████  10%
 Session 4  [Analytics API]          ██████████  10%
-Session 5  [Gemini AI]              ░░░░░░░░░░  0%
+Session 5  [Gemini AI]              ██████████  10%
 Session 6  [React + Auth UI]        ░░░░░░░░░░  0%
 Session 7  [Recharts Dashboard]     ░░░░░░░░░░  0%
 Session 8  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 9  [PDF Export]             ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 4 / 10 Sessions Complete
+Total: 5 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete

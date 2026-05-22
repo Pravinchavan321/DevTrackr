@@ -281,11 +281,25 @@ All analytics routes require a Bearer access token. The `:repoId` must belong to
 - **Repository belongs to another user**: Returns `403 Forbidden`
 
 ### AI Insights (Session 5+)
-- `POST /api/ai/repos/:repoId/summarize` — Sprint summary
-- `POST /api/ai/repos/:repoId/bottlenecks` — Bottleneck analysis
-- `POST /api/ai/repos/:repoId/contributors` — Contributor analysis
-- `POST /api/ai/repos/:repoId/recommendations` — Recommendations
-- `GET /api/ai/repos/:repoId/insights` — Get cached insights
+All AI routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
+- **POST /api/ai/repos/:repoId/summarize** — Generate or fetch cached 24-hour sprint summary insight
+  - **Query Parameters**: `force` (`true` to bypass cache and regenerate, default `false`)
+  - **Request Body**: `{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }` (optional date ranges, defaults to last 30 days)
+- **POST /api/ai/repos/:repoId/bottlenecks** — Generate or fetch cached 24-hour bottleneck detection insight
+  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
+- **POST /api/ai/repos/:repoId/contributors** — Generate or fetch cached 24-hour contributor team health analysis
+  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
+- **POST /api/ai/repos/:repoId/recommendations** — Generate or fetch cached 24-hour task recommendations and next best action
+  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
+- **GET /api/ai/repos/:repoId/insights** — Retrieve list of all currently active cached insights for the repository
+
+#### Access Control & Setup Rules
+- **Authentication**: All routes protected by `authenticateToken` JWT validation.
+- **Invalid repoId format**: Returns `400 Bad Request`
+- **Repository not found**: Returns `404 Not Found`
+- **Repository belongs to another user**: Returns `403 Forbidden`
+- **Cache Control**: Insights are cached in MongoDB with a 24-hour expiration (`expiresAt` TTL index). The `force=true` query parameter forces immediate regeneration.
+- **Config**: Requires `GEMINI_API_KEY` and `GEMINI_MODEL=gemini-1.5-flash` configured in the backend environment.
 
 ### Export (Session 9+)
 - `GET /api/export/repos/:repoId/pdf` — Download PDF report
@@ -334,8 +348,8 @@ This project is built in 10 structured sessions:
 1. ✅ **Session 1** — Docker + Express + Auth
 2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
 3. ✅ **Session 3** — GitHub Data Sync Engine
-4. ✅ **Session 4** — Analytics API Endpoints (CURRENT)
-5. **Session 5** — Gemini AI Integration
+4. ✅ **Session 4** — Analytics API Endpoints
+5. ✅ **Session 5** — Gemini AI Integration (CURRENT)
 6. **Session 6** — React Frontend Auth Pages + Dashboard Layout
 7. **Session 7** — Recharts Dashboard + Charts
 8. **Session 8** — AI Insight Cards UI
@@ -373,4 +387,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 4 Complete
+**Last Updated**: Session 5 Complete
