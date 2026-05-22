@@ -4,6 +4,34 @@ import User from '../models/User.model.js';
 import { encrypt, decrypt } from '../utils/encryptionHelper.js';
 import logger from '../config/logger.js';
 
+const isPlaceholderValue = (value) => {
+  if (!value) {
+    return true;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  return (
+    normalized.startsWith('<') ||
+    normalized.includes('paste_') ||
+    normalized.includes('your_') ||
+    normalized.includes('change_me')
+  );
+};
+
+const assertGitHubOAuthConfig = ({ includeSecret = false } = {}) => {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const redirectUri = process.env.GITHUB_REDIRECT_URI;
+
+  if (isPlaceholderValue(clientId) || isPlaceholderValue(redirectUri) || (includeSecret && isPlaceholderValue(clientSecret))) {
+    const error = new Error('GitHub OAuth is not configured. Add a real GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in backend/.env, then restart Docker.');
+    error.statusCode = 500;
+    throw error;
+  }
+
+  return { clientId, clientSecret, redirectUri };
+};
+
 /**
  * Generates the GitHub OAuth authorization URL and a secure JWT state
  * @param {string} userId - The authenticated user's ID
@@ -15,12 +43,7 @@ export const generateGitHubAuthUrl = (userId) => {
     throw new Error('JWT_SECRET environment variable is missing');
   }
 
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const redirectUri = process.env.GITHUB_REDIRECT_URI;
-
-  if (!clientId || !redirectUri) {
-    throw new Error('GITHUB_CLIENT_ID or GITHUB_REDIRECT_URI environment variable is missing');
-  }
+  const { clientId, redirectUri } = assertGitHubOAuthConfig();
 
   // Create a secure state with user identification and a secure nonce
   const nonce = Math.random().toString(36).substring(2, 15);
@@ -40,13 +63,7 @@ export const generateGitHubAuthUrl = (userId) => {
  * @returns {Promise<string>} The access token
  */
 export const exchangeCodeForToken = async (code) => {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  const redirectUri = process.env.GITHUB_REDIRECT_URI;
-
-  if (!clientId || !clientSecret || !redirectUri) {
-    throw new Error('GitHub OAuth environment variables are missing');
-  }
+  const { clientId, clientSecret, redirectUri } = assertGitHubOAuthConfig({ includeSecret: true });
 
   const response = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',

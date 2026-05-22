@@ -49,7 +49,7 @@ export default function RepoSelector() {
             {repos.length === 0 ? 'No repositories found' : 'Select active repository'}
           </option>
           {repos.map((repo) => (
-            <option key={repo._id} value={repo.fullName}>
+            <option key={repo._id || repo.id || repo.fullName} value={repo.fullName}>
               {repo.fullName}
             </option>
           ))}

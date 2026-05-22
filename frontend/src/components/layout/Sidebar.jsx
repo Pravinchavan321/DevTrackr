@@ -25,13 +25,12 @@ export default function Sidebar() {
     { name: 'Settings', to: '/settings', icon: Cog6ToothIcon }
   ];
 
-  const sidebarClasses = `fixed inset-y-0 left-0 z-40 w-64 transform bg-gray-900 border-r border-gray-800/80 p-5 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen ${
+  const sidebarClasses = `fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col overflow-hidden border-r border-gray-800/80 bg-gray-900 p-5 shadow-2xl shadow-gray-950/20 transition-transform duration-300 ease-in-out md:static md:h-screen md:translate-x-0 ${
     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
   }`;
 
   return (
     <>
-      {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-gray-950/60 backdrop-blur-sm md:hidden"
@@ -40,12 +39,11 @@ export default function Sidebar() {
       )}
 
       <aside className={sidebarClasses}>
-        {/* Logo Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-gray-800">
-          <div className="flex items-center space-x-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 shadow-md shadow-indigo-600/30">
+        <div className="flex items-center justify-between border-b border-gray-800 pb-5">
+          <div className="flex min-w-0 items-center space-x-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 shadow-md shadow-indigo-600/30">
               <svg
-                className="h-5.5 w-5.5 text-white"
+                className="h-5 w-5 text-white"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -58,20 +56,20 @@ export default function Sidebar() {
                 />
               </svg>
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">DevTrackr</span>
+            <span className="truncate text-lg font-extrabold tracking-tight text-white">DevTrackr</span>
           </div>
-          
-          {/* Close button for mobile drawer */}
+
           <button
+            type="button"
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-850 hover:text-white transition-colors"
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-850 hover:text-gray-100 md:hidden"
+            aria-label="Close sidebar"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="mt-8 flex-1 space-y-1.5 overflow-y-auto">
+        <nav className="mt-6 flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-1">
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
@@ -80,23 +78,22 @@ export default function Sidebar() {
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                  `group flex min-w-0 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/15'
                       : 'text-gray-400 hover:bg-gray-850 hover:text-gray-200'
                   }`
                 }
               >
-                <Icon className="h-5.5 w-5.5 flex-shrink-0" />
-                <span>{item.name}</span>
+                <Icon className="h-5 w-5 shrink-0" />
+                <span className="truncate">{item.name}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Footer info */}
-        <div className="mt-auto pt-4 border-t border-gray-800 text-center">
-          <p className="text-xs text-gray-500 font-mono">v1.0.0 — AI Foundation</p>
+        <div className="mt-5 border-t border-gray-800 pt-4 text-center">
+          <p className="font-mono text-xs text-gray-500">v1.0.0 - AI Foundation</p>
         </div>
       </aside>
     </>

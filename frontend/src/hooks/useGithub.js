@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import useRepoStore from '../store/repoStore';
 import * as githubApi from '../api/github.api';
 
@@ -8,33 +8,36 @@ export default function useGithub() {
     selectedRepo,
     isSyncing,
     rateLimitWarning,
+    isConnected,
+    githubUsername,
+    statusLoading,
+    reposLoading,
     setRepos,
     setSelectedRepo,
     setSyncing,
     setRateLimitWarning,
+    setConnectionStatus,
+    setStatusLoading,
+    setReposLoading,
     clearRepos
   } = useRepoStore();
-
-  const [isConnected, setIsConnected] = useState(false);
-  const [githubUsername, setGithubUsername] = useState('');
-  const [statusLoading, setStatusLoading] = useState(true);
-  const [reposLoading, setReposLoading] = useState(false);
 
   const checkConnectionStatus = useCallback(async () => {
     setStatusLoading(true);
     try {
       const response = await githubApi.getGithubStatus();
       if (response && response.success) {
-        setIsConnected(response.data.connected);
-        setGithubUsername(response.data.username || '');
+        setConnectionStatus({
+          isConnected: response.data.connected,
+          githubUsername: response.data.username || ''
+        });
       }
     } catch (error) {
-      setIsConnected(false);
-      setGithubUsername('');
+      setConnectionStatus({ isConnected: false, githubUsername: '' });
     } finally {
       setStatusLoading(false);
     }
-  }, []);
+  }, [setConnectionStatus, setStatusLoading]);
 
   const connect = useCallback(async () => {
     try {
@@ -54,8 +57,6 @@ export default function useGithub() {
     try {
       const response = await githubApi.disconnectGithub();
       if (response && response.success) {
-        setIsConnected(false);
-        setGithubUsername('');
         clearRepos();
         return { success: true };
       }
@@ -87,11 +88,27 @@ export default function useGithub() {
     setRateLimitWarning(false);
     try {
       const response = await githubApi.syncRepo(selectedRepo.fullName);
+      const syncedRepo = response.data?.repository;
       
       // Check for rate limit warning from backend
       // Backend should set x-ratelimit-remaining or rateLimitWarning if near limit
-      if (response.data && response.data.rateLimitWarning) {
+      if (response.data?.rateLimitWarning || response.data?.warning) {
         setRateLimitWarning(true);
+      }
+
+      if (syncedRepo) {
+        const normalizedRepo = {
+          ...selectedRepo,
+          ...syncedRepo,
+          _id: syncedRepo.id || syncedRepo._id
+        };
+
+        setSelectedRepo(normalizedRepo);
+        setRepos(
+          repos.map((repo) =>
+            repo.fullName === normalizedRepo.fullName ? normalizedRepo : repo
+          )
+        );
       }
       
       setSyncing(false);
@@ -101,7 +118,7 @@ export default function useGithub() {
       const message = error.response?.data?.message || 'Sync failed. Please try again.';
       return { success: false, message };
     }
-  }, [selectedRepo, setSyncing, setRateLimitWarning]);
+  }, [repos, selectedRepo, setRepos, setSelectedRepo, setSyncing, setRateLimitWarning]);
 
   return {
     repos,

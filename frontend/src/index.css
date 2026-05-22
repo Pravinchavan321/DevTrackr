@@ -1,6 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root,
+.dark {
+  --color-white: 255 255 255;
+  --color-gray-50: 249 250 251;
+  --color-gray-100: 243 244 246;
+  --color-gray-150: 238 242 247;
+  --color-gray-200: 229 231 235;
+  --color-gray-300: 209 213 219;
+  --color-gray-400: 156 163 175;
+  --color-gray-405: 148 155 171;
+  --color-gray-450: 126 136 151;
+  --color-gray-500: 107 114 128;
+  --color-gray-600: 75 85 99;
+  --color-gray-700: 55 65 81;
+  --color-gray-800: 31 41 55;
+  --color-gray-850: 24 31 46;
+  --color-gray-900: 17 24 39;
+  --color-gray-950: 3 7 18;
+}
+
+.light {
+  --color-white: 15 23 42;
+  --color-gray-50: 2 6 23;
+  --color-gray-100: 15 23 42;
+  --color-gray-150: 15 23 42;
+  --color-gray-200: 30 41 59;
+  --color-gray-300: 51 65 85;
+  --color-gray-400: 71 85 105;
+  --color-gray-405: 71 85 105;
+  --color-gray-450: 82 97 116;
+  --color-gray-500: 100 116 139;
+  --color-gray-600: 148 163 184;
+  --color-gray-700: 203 213 225;
+  --color-gray-800: 226 232 240;
+  --color-gray-850: 241 245 249;
+  --color-gray-900: 255 255 255;
+  --color-gray-950: 246 248 252;
+}
 
 * {
   @apply outline-none;
@@ -8,8 +49,27 @@
 
 html {
   @apply scroll-smooth;
+  color-scheme: dark;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
-  @apply bg-gray-950 text-gray-100;
+  @apply bg-gray-950 text-gray-100 font-sans antialiased;
+}
+
+.bg-indigo-600,
+.bg-indigo-500,
+.bg-red-600,
+.bg-emerald-600,
+.bg-amber-500 {
+  --color-white: 255 255 255;
+}
+
+::selection {
+  background: rgb(99 102 241 / 0.28);
+  color: rgb(var(--color-gray-50));
 }

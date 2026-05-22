@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import ErrorBoundary from '../common/ErrorBoundary';
+import useGithub from '../../hooks/useGithub';
 
 export default function AppLayout() {
+  const { checkConnectionStatus } = useGithub();
+
+  useEffect(() => {
+    checkConnectionStatus();
+  }, [checkConnectionStatus]);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100 font-sans">
       {/* Responsive Left Sidebar Navigation */}

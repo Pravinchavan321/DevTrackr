@@ -50,6 +50,11 @@ import * as encryptionHelper from '../src/utils/encryptionHelper.js';
 let app;
 
 beforeAll(async () => {
+  process.env.GITHUB_CLIENT_ID = 'test_github_client_id_123';
+  process.env.GITHUB_CLIENT_SECRET = 'test_github_client_secret_456';
+  process.env.GITHUB_REDIRECT_URI = 'http://localhost:5000/api/github/callback';
+  process.env.FRONTEND_URL = 'http://localhost:5173';
+
   await connectTestDb();
   // Dynamically import app so it uses the mocked module
   const appModule = await import('../src/app.js');

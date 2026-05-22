@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ToastNotifications from './components/common/ToastNotifications';
+import useUiStore from './store/uiStore';
 
 // Layout shells
 import PrivateRoute from './components/layout/PrivateRoute';
@@ -25,8 +26,18 @@ import InsightsPage from './pages/InsightsPage';
 import './index.css';
 
 export default function App() {
+  const theme = useUiStore((state) => state.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', theme === 'dark');
+    root.classList.toggle('light', theme === 'light');
+    root.dataset.theme = theme;
+    window.localStorage.setItem('devtrackr-theme', theme);
+  }, [theme]);
+
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       {/* Toast Alert Portal */}
       <ToastNotifications />
 
