@@ -395,46 +395,55 @@ All export routes require a Bearer access token. The `:repoId` must belong to th
 - **Repository not found**: Returns `404 Not Found`
 - **Repository belongs to another user**: Returns `403 Forbidden`
 
-## 🐛 Troubleshooting
+## 🐛 Troubleshooting & Common Errors
 
-### MongoDB Connection Issues
-```bash
-# Check if MongoDB is running
-mongosh
+### 1. MongoDB Connection Failed
+* **Error symptoms**: Backend prints `MongoDB connection error: ...` or timed out messages on boot, or REST queries fail with `500 Server Error`.
+* **Solutions**:
+  - **Docker Setup**: Ensure the MongoDB service `mongo` is up and healthy. Run `docker compose ps` to inspect. Check `MONGO_URI` in `backend/.env`. Inside the Docker network, it must be `mongodb://mongo:27017/devtrackr` (using the service name `mongo`, not `localhost`).
+  - **Local Setup**: Ensure local MongoDB instance is started. On Windows, verify "MongoDB Server" is running in the Services app, or launch manually via `mongod --port 27017`. Set `MONGO_URI=mongodb://localhost:27017/devtrackr`.
+  - **Atlas Cloud Setup**: Ensure your IP address is whitelisted in your MongoDB Atlas network access control panel. Use the correct connection string: `MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/devtrackr?retryWrites=true&w=majority`.
 
-# If using Docker
-docker ps | grep mongo
-```
+### 2. GitHub OAuth Callback URL Mismatch
+* **Error symptoms**: Redirecting to GitHub shows a standard error: `redirect_uri_mismatch`.
+* **Solutions**:
+  - Verify that the Authorization Callback URL in your GitHub Developer settings matches your `GITHUB_REDIRECT_URI` environment variable exactly.
+  - For local development, this must be `http://localhost:5000/api/github/callback`.
+  - Ensure that the frontend uses the exact same `VITE_GITHUB_CLIENT_ID` matching the `GITHUB_CLIENT_ID` in your backend `.env` file.
 
-### Port Already in Use
-```bash
-# Port 5000 (backend)
-lsof -i :5000
-kill -9 <PID>
+### 3. Missing Gemini API Key
+* **Error symptoms**: Requesting AI Insights hangs or returns `500 Internal Server Error` with `Gemini API key is required` or `API key not valid` logged in the console.
+* **Solutions**:
+  - Obtain a valid free-tier or pay-as-you-go API key from Google AI Studio.
+  - Ensure `GEMINI_API_KEY` is fully defined in your `backend/.env` file.
+  - Ensure `GEMINI_MODEL=gemini-1.5-flash` is set for optimal processing speed and compatibility.
 
-# Port 5173 (frontend)
-lsof -i :5173
-kill -9 <PID>
-```
+### 4. CORS & Credentials Issue
+* **Error symptoms**: Axios requests fail in the browser with `Access-Control-Allow-Origin` errors or `Credentials flag not matched`.
+* **Solutions**:
+  - Ensure `FRONTEND_URL` is set to `http://localhost:5173` (or your production domain) in `backend/.env`.
+  - Ensure the backend configuration in `app.js` enables `cors({ origin: process.env.FRONTEND_URL, credentials: true })`.
+  - Frontend Axios requests must include `withCredentials: true` (handled automatically by the centralized `api/axios.js` client).
 
-### Docker Issues
-```bash
-# Clear Docker cache
-docker system prune -a
+### 5. Refresh Token / httpOnly Cookie Issue
+* **Error symptoms**: Silent token refreshes fail continually or users are logged out unexpectedly after 15 minutes (or when reloading the browser).
+* **Solutions**:
+  - Verify that `cookie-parser` middleware is mounted properly in the Express app.
+  - Ensure that cookies are not blocked in your browser's security/privacy preferences.
+  - For local development, the refresh cookie is issued with `secure: false` (since it is running on HTTP). In production, configure `secure: true` and ensure HTTPS traffic.
 
-# View logs
-docker compose logs -f backend
-docker compose logs -f frontend
-```
+### 6. Docker Environment File Missing
+* **Error symptoms**: Docker Compose fails to spin up the backend or frontend containers, printing errors like `env_file backend/.env not found`.
+* **Solutions**:
+  - Docker Compose relies on physical `.env` files existing in the `backend/` and `frontend/` folders.
+  - Before running `docker compose up --build`, copy the `.env.example` files to `.env` in both folders and fill in your values.
+  - **Important**: Do not commit these `.env` files to git.
 
-### .env Not Loading
-- Make sure .env file is in the correct directory
-- Restart the server after changing .env
-- Check `NODE_ENV` — some features only work in production
+---
 
 ## 📝 Development Sessions
 
-This project is built in 10 structured sessions:
+This project is successfully built across 10 structured sessions:
 
 1. ✅ **Session 1** — Docker + Express + Auth
 2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
@@ -444,8 +453,10 @@ This project is built in 10 structured sessions:
 6. ✅ **Session 6** — PDF Export Backend
 7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout
 8. ✅ **Session 8** — Recharts Dashboard + Charts
-9. ✅ **Session 9** — AI Insight Cards UI (CURRENT)
-10. **Session 10** Polish, Error Handling, Deployment Config
+9. ✅ **Session 9** — AI Insight Cards UI
+10. ✅ **Session 10** — Polish, Error Handling, QA, & Production Readiness (FINAL)
+
+---
 
 ## 📦 Dependencies
 
@@ -478,4 +489,5 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 9 Complete
+**Last Updated**: Session 10 Complete (100% Production Ready)
+
