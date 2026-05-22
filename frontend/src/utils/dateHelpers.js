@@ -42,3 +42,27 @@ export function timeAgo(dateVal) {
   const months = Math.floor(days / 30);
   return `${months}mo ago`;
 }
+
+/**
+ * Returns an ISO date string (YYYY-MM-DD) suitable for date inputs.
+ * @param {string|Date} dateVal - Date value
+ * @returns {string} ISO Date String
+ */
+export function getISODateString(dateVal) {
+  if (!dateVal) return '';
+  const date = new Date(dateVal);
+  if (isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Returns a date object representing N days ago.
+ * @param {number} days - Number of days ago
+ * @returns {string} ISO Date String for N days ago
+ */
+export function getDaysAgo(days) {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return getISODateString(date);
+}
+

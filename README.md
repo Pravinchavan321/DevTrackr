@@ -198,7 +198,13 @@ VITE_GITHUB_CLIENT_ID=your_github_client_id
   - `/pullrequests` — PR lifecycle analysis incorporating a `PRStatusPieChart` (Open vs Merged vs Closed status distributions), and a paginated PR list with creation/merge times and state badges.
   - `/issues` — Issue tracking view featuring an interactive `IssueHeatmap` showing activity frequency, open/closed summary cards, and a paginated issues list.
   - `/contributors` — Team collaboration metrics containing a `ContributorRadarChart` summarizing top 5 contributor activity levels (commits, additions, deletions, files changed) alongside detailed contributor cards with avatars and last commit timestamps.
-  - `/insights` — AI-powered insights report view (Session 9 foundation).
+  - `/insights` — AI-powered developer insights board. Connects to Google Gemini API endpoints via our backend, allowing users to:
+    1. **Generate Sprint Summaries** — Renders executive summaries, sprint health scores, team velocities, highlights lists, and concerns lists. Includes date inputs to select sprint window scoping.
+    2. **Detect Delivery Bottlenecks** — Displays pipeline risk banners, strategic priority recommendation cards, and detailed severity-level (High/Medium/Low) bottleneck alerts.
+    3. **Analyze Contributor Health** — Highlights team health score meters, active contributors count, inactive contributor alerts, bus factor risk highlights, and team health diagnostics.
+    4. **Formulate Task Recommendations** — Renders immediate team critical path next-best-action callouts, and numbered prioritized action cards complete with severity badges.
+    5. **Retain 24h Cached Insights** — Pulls cached insights on initial load and allows on-demand individual section regeneration with `force=true` query parameters.
+    6. **Export PDF Reports** — Integrates a page-header download action streaming a generated high-fidelity PDFKit report with complete visual layouts and page numbering directly to local storage.
   - `/settings` — Profile settings with the interactive GitHub connect card.
 
 ### 📊 Analytics & Recharts Chart Suite
@@ -437,8 +443,8 @@ This project is built in 10 structured sessions:
 5. ✅ **Session 5** — Gemini AI Integration
 6. ✅ **Session 6** — PDF Export Backend
 7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout
-8. ✅ **Session 8** — Recharts Dashboard + Charts (CURRENT)
-9. **Session 9** — AI Insight Cards UI
+8. ✅ **Session 8** — Recharts Dashboard + Charts
+9. ✅ **Session 9** — AI Insight Cards UI (CURRENT)
 10. **Session 10** Polish, Error Handling, Deployment Config
 
 ## 📦 Dependencies
@@ -472,4 +478,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 8 Complete
+**Last Updated**: Session 9 Complete

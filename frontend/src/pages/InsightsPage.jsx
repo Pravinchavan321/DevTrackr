@@ -1,37 +1,274 @@
-import React from 'react';
-import useGithub from '../hooks/useGithub';
+import React, { useEffect, useState } from 'react';
+import useRepoStore from '../store/repoStore';
+import useInsights from '../hooks/useInsights';
+import { timeAgo } from '../utils/dateHelpers';
 import EmptyState from '../components/common/EmptyState';
+import GenerateInsightButton from '../components/insights/GenerateInsightButton';
+import InsightCard from '../components/insights/InsightCard';
+import SprintSummaryCard from '../components/insights/SprintSummaryCard';
+import BottleneckCard from '../components/insights/BottleneckCard';
+import ContributorAnalysisCard from '../components/insights/ContributorAnalysisCard';
+import RecommendationsCard from '../components/insights/RecommendationsCard';
 
+/**
+ * InsightsPage connects the React frontend to Gemini AI Insights and PDFKit Export APIs.
+ */
 export default function InsightsPage() {
-  const { selectedRepo } = useGithub();
+  const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const {
+    loading,
+    cachedInsights,
+    error,
+    generating,
+    fetchInsights,
+    generateSprintSummary,
+    generateBottlenecks,
+    generateContributorAnalysis,
+    generateRecommendations,
+    downloadPdfReport
+  } = useInsights();
+
+  // Load cached insights when repository changes
+  useEffect(() => {
+    if (selectedRepo?._id) {
+      fetchInsights(selectedRepo._id);
+    }
+  }, [selectedRepo?._id, fetchInsights]);
+
+  // Handler to stream PDF reports
+  const handlePdfDownload = async () => {
+    if (!selectedRepo?._id) return;
+    await downloadPdfReport(selectedRepo._id, selectedRepo.name);
+  };
+
+  if (!selectedRepo) {
+    return (
+      <div className="py-10">
+        <EmptyState
+          title="Select a repository"
+          description="Choose a synced repository to generate AI insights."
+        />
+      </div>
+    );
+  }
+
+  // Extract individual insight objects
+  const summaryDoc = cachedInsights.sprint_summary;
+  const bottleneckDoc = cachedInsights.bottleneck;
+  const contributorDoc = cachedInsights.contributor_analysis;
+  const recommendationsDoc = cachedInsights.recommendations;
+
+  // Helper to render relative timestamps
+  const renderTimestamp = (doc) => {
+    if (!doc?.generatedAt) return null;
+    return (
+      <span className="text-[10px] text-gray-500 font-medium tracking-wide">
+        Synced {timeAgo(doc.generatedAt)}
+      </span>
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="pb-4 border-b border-gray-800 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">AI Developer Insights</h1>
-          <p className="text-sm text-gray-400">Gemini-driven sprint summaries, bottleneck detections, and priorities.</p>
-        </div>
-      </div>
-
-      {!selectedRepo ? (
-        <EmptyState
-          title="No repository selected"
-          description="Please select a repository in the top bar or connect your GitHub account in settings to generate AI developer insights."
-        />
-      ) : (
-        <div className="bg-gray-900 border border-gray-850 rounded-xl p-8 text-center space-y-3">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Page Header */}
+      <div className="pb-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-white">AI Developer Insights</h1>
+            <span className="inline-flex items-center rounded bg-indigo-500/10 px-2 py-0.5 text-xs font-semibold text-indigo-400 border border-indigo-500/20">
+              Gemini Powered
+            </span>
           </div>
-          <h2 className="text-lg font-semibold text-gray-200">AI Insights Board Coming Soon</h2>
-          <p className="text-sm text-gray-400 max-w-sm mx-auto">
-            High-fidelity AI sprint summaries, pipeline analysis panels, and actionable developer recommendations for <strong className="text-indigo-400">{selectedRepo.fullName}</strong> will be implemented in Session 9.
+          <p className="text-sm text-gray-400">
+            Sprint executive summaries, systemic pipeline bottlenecks, and priority contributor analysis for{' '}
+            <strong className="text-indigo-400">{selectedRepo.fullName}</strong>.
           </p>
         </div>
+        
+        {/* PDF Download Button */}
+        <button
+          onClick={handlePdfDownload}
+          disabled={loading || Object.values(generating).some(Boolean)}
+          className="inline-flex items-center justify-center font-medium bg-gray-850 hover:bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-4 py-2 text-sm disabled:opacity-50 disabled:bg-gray-900 transition-all duration-200 shadow-sm shrink-0"
+        >
+          <svg className="h-4.5 w-4.5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export PDF Report
+        </button>
+      </div>
+
+      {/* Global Error Callout */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start space-x-3">
+          <svg className="h-5 w-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div className="space-y-0.5">
+            <h4 className="text-sm font-semibold text-gray-200">Retrieval Impediment</h4>
+            <p className="text-xs text-gray-400 leading-relaxed">{error}</p>
+          </div>
+        </div>
       )}
+
+      {/* High-Fidelity Responsive 2-Column Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        
+        {/* Section 1: Sprint Summary */}
+        <InsightCard
+          title="Sprint Summary"
+          description="Executive summary, velocity ratings, highlights and Concerns."
+          loading={loading || (generating.sprint_summary && !summaryDoc)}
+          error={null}
+          action={
+            <div className="flex items-center space-x-2">
+              {summaryDoc && (
+                <GenerateInsightButton
+                  variant="ghost"
+                  loading={generating.sprint_summary}
+                  disabled={loading}
+                  onClick={() => generateSprintSummary(selectedRepo._id, {}, { force: true })}
+                  className="px-2 py-1 text-xs"
+                >
+                  Regenerate
+                </GenerateInsightButton>
+              )}
+              {!summaryDoc && !generating.sprint_summary && (
+                <GenerateInsightButton
+                  variant="primary"
+                  loading={generating.sprint_summary}
+                  disabled={loading}
+                  onClick={() => generateSprintSummary(selectedRepo._id, {}, {})}
+                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                >
+                  Generate Summary
+                </GenerateInsightButton>
+              )}
+            </div>
+          }
+          footer={renderTimestamp(summaryDoc)}
+        >
+          <SprintSummaryCard
+            parsedData={summaryDoc?.parsedData}
+            generating={generating.sprint_summary}
+            onGenerate={(fromDate, toDate) => 
+              generateSprintSummary(selectedRepo._id, { from: fromDate, to: toDate }, { force: true })
+            }
+          />
+        </InsightCard>
+
+        {/* Section 2: Bottleneck Detection */}
+        <InsightCard
+          title="Bottleneck Analysis"
+          description="Workload imbalances, average PR merge times, stale deliverables."
+          loading={loading || (generating.bottleneck && !bottleneckDoc)}
+          error={null}
+          action={
+            <div className="flex items-center space-x-2">
+              {bottleneckDoc && (
+                <GenerateInsightButton
+                  variant="ghost"
+                  loading={generating.bottleneck}
+                  disabled={loading}
+                  onClick={() => generateBottlenecks(selectedRepo._id, { force: true })}
+                  className="px-2 py-1 text-xs"
+                >
+                  Regenerate
+                </GenerateInsightButton>
+              )}
+              {!bottleneckDoc && !generating.bottleneck && (
+                <GenerateInsightButton
+                  variant="primary"
+                  loading={generating.bottleneck}
+                  disabled={loading}
+                  onClick={() => generateBottlenecks(selectedRepo._id, {})}
+                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                >
+                  Detect Bottlenecks
+                </GenerateInsightButton>
+              )}
+            </div>
+          }
+          footer={renderTimestamp(bottleneckDoc)}
+        >
+          <BottleneckCard parsedData={bottleneckDoc?.parsedData} />
+        </InsightCard>
+
+        {/* Section 3: Contributor Health Analysis */}
+        <InsightCard
+          title="Contributor Analysis"
+          description="Collaboration score metrics, inactive handles, project dependencies."
+          loading={loading || (generating.contributor_analysis && !contributorDoc)}
+          error={null}
+          action={
+            <div className="flex items-center space-x-2">
+              {contributorDoc && (
+                <GenerateInsightButton
+                  variant="ghost"
+                  loading={generating.contributor_analysis}
+                  disabled={loading}
+                  onClick={() => generateContributorAnalysis(selectedRepo._id, { force: true })}
+                  className="px-2 py-1 text-xs"
+                >
+                  Regenerate
+                </GenerateInsightButton>
+              )}
+              {!contributorDoc && !generating.contributor_analysis && (
+                <GenerateInsightButton
+                  variant="primary"
+                  loading={generating.contributor_analysis}
+                  disabled={loading}
+                  onClick={() => generateContributorAnalysis(selectedRepo._id, {})}
+                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                >
+                  Analyze Contributor Health
+                </GenerateInsightButton>
+              )}
+            </div>
+          }
+          footer={renderTimestamp(contributorDoc)}
+        >
+          <ContributorAnalysisCard parsedData={contributorDoc?.parsedData} />
+        </InsightCard>
+
+        {/* Section 4: Recommendations */}
+        <InsightCard
+          title="Recommendations"
+          description="Prioritized actionable milestones to accelerate delivery speeds."
+          loading={loading || (generating.recommendations && !recommendationsDoc)}
+          error={null}
+          action={
+            <div className="flex items-center space-x-2">
+              {recommendationsDoc && (
+                <GenerateInsightButton
+                  variant="ghost"
+                  loading={generating.recommendations}
+                  disabled={loading}
+                  onClick={() => generateRecommendations(selectedRepo._id, { force: true })}
+                  className="px-2 py-1 text-xs"
+                >
+                  Regenerate
+                </GenerateInsightButton>
+              )}
+              {!recommendationsDoc && !generating.recommendations && (
+                <GenerateInsightButton
+                  variant="primary"
+                  loading={generating.recommendations}
+                  disabled={loading}
+                  onClick={() => generateRecommendations(selectedRepo._id, {})}
+                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                >
+                  Formulate Recommendations
+                </GenerateInsightButton>
+              )}
+            </div>
+          }
+          footer={renderTimestamp(recommendationsDoc)}
+        >
+          <RecommendationsCard parsedData={recommendationsDoc?.parsedData} />
+        </InsightCard>
+
+      </div>
     </div>
   );
 }

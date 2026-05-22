@@ -36,3 +36,6 @@ export const API_ROUTES = {
     PDF: (repoId) => `/export/repos/${repoId}/pdf`
   }
 };
+
+export const DEFAULT_SPRINT_DAYS = 14;
+

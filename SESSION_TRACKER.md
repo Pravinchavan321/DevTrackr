@@ -298,28 +298,28 @@
 ---
 
 ### SESSION 9 — AI Insight Cards UI
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 8 complete
 
 **Goal:** AI insights panel fully wired to backend, beautiful cards UI
 
 **What was built:**
-- [ ] `useInsights.js` hook — fetch cached + trigger generation
-- [ ] `InsightsPage.jsx` — grid of all insight types
-- [ ] `GenerateInsightButton.jsx` — loading state while Gemini processes
-- [ ] `SprintSummaryCard.jsx` — score badge (1–10), highlights list, concerns list
-- [ ] `BottleneckCard.jsx` — bottleneck list with severity color badges (red/yellow/green)
-- [ ] `RecommendationsCard.jsx` — numbered task prioritization tips
-- [ ] `InsightCard.jsx` — generic wrapper with type label + timestamp
-- [ ] Force-regenerate button (`?force=true`)
-- [ ] "Last generated X hours ago" timestamp shown
-- [ ] Loading skeleton while AI generates
-- [ ] Error state if Gemini fails
+- [x] `useInsights.js` hook — fetch cached + trigger generation
+- [x] `InsightsPage.jsx` — grid of all insight types
+- [x] `GenerateInsightButton.jsx` — loading state while Gemini processes
+- [x] `SprintSummaryCard.jsx` — score badge (1–10), highlights list, concerns list
+- [x] `BottleneckCard.jsx` — bottleneck list with severity color badges (red/yellow/green)
+- [x] `RecommendationsCard.jsx` — numbered task prioritization tips
+- [x] `InsightCard.jsx` — generic wrapper with type label + timestamp
+- [x] Force-regenerate button (`?force=true`)
+- [x] "Last generated X hours ago" timestamp shown
+- [x] Loading skeleton while AI generates
+- [x] Error state if Gemini fails
+- [x] PDF Report export download trigger on frontend connected to backend export API
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- None. Ready for Session 10.
+
 
 ---
 
@@ -383,10 +383,10 @@ Session 5  [Gemini AI]              ██████████  10%
 Session 6  [PDF Export]             ██████████  10%
 Session 7  [React + Auth UI]        ██████████  10%
 Session 8  [Recharts Dashboard]     ██████████  10%
-Session 9  [AI Insight Cards]       ░░░░░░░░░░  0%
+Session 9  [AI Insight Cards]       ██████████  10%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 8 / 10 Sessions Complete
+Total: 9 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete
