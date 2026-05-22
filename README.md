@@ -218,7 +218,7 @@ npm test:coverage
 - `backend/__tests__/github.test.js` — GitHub OAuth (Session 2)
 - `backend/__tests__/analytics.test.js` — Analytics endpoints (Session 4)
 - `backend/__tests__/ai.test.js` — AI insights (Session 5)
-- `backend/__tests__/export.test.js` — PDF export (Session 9)
+- `backend/__tests__/export.test.js` — PDF export (Session 6)
 
 ## 📚 API Routes
 
@@ -301,8 +301,23 @@ All AI routes require a Bearer access token. The `:repoId` must belong to the au
 - **Cache Control**: Insights are cached in MongoDB with a 24-hour expiration (`expiresAt` TTL index). The `force=true` query parameter forces immediate regeneration.
 - **Config**: Requires `GEMINI_API_KEY` and `GEMINI_MODEL=gemini-1.5-flash` configured in the backend environment.
 
-### Export (Session 9+)
-- `GET /api/export/repos/:repoId/pdf` — Download PDF report
+### Export (Session 6+)
+All export routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
+- **GET /api/export/repos/:repoId/pdf** — Download a PDF report for the repository
+  - **Headers**: `Authorization: Bearer <JWT_ACCESS_TOKEN>`
+  - **Parameters**: `:repoId` (MongoDB ObjectId of the synced repository)
+  - **Success Response** (200 OK):
+    - `Content-Type: application/pdf`
+    - `Content-Disposition: attachment; filename="devtrackr-report-<repo-name>.pdf"`
+    - Body is a binary PDF stream — browser/client should download the response as a file
+  - **PDF includes**: Repository stats, top contributors table, recent commits, PRs, issues, and cached AI insights (sprint summary, bottlenecks, recommendations) if available
+  - **Note**: Does not regenerate AI insights. Only reads cached insights from MongoDB.
+
+#### Access Control Rules
+- **Missing/invalid auth token**: Returns `401 Unauthorized`
+- **Invalid repoId format**: Returns `400 Bad Request`
+- **Repository not found**: Returns `404 Not Found`
+- **Repository belongs to another user**: Returns `403 Forbidden`
 
 ## 🐛 Troubleshooting
 
@@ -349,11 +364,11 @@ This project is built in 10 structured sessions:
 2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
 3. ✅ **Session 3** — GitHub Data Sync Engine
 4. ✅ **Session 4** — Analytics API Endpoints
-5. ✅ **Session 5** — Gemini AI Integration (CURRENT)
-6. **Session 6** — React Frontend Auth Pages + Dashboard Layout
-7. **Session 7** — Recharts Dashboard + Charts
-8. **Session 8** — AI Insight Cards UI
-9. **Session 9** — PDF Export
+5. ✅ **Session 5** — Gemini AI Integration
+6. ✅ **Session 6** — PDF Export Backend (CURRENT)
+7. **Session 7** — React Frontend Auth Pages + Dashboard Layout
+8. **Session 8** — Recharts Dashboard + Charts
+9. **Session 9** — AI Insight Cards UI
 10. **Session 10** — Polish, Error Handling, Deployment Config
 
 ## 📦 Dependencies
@@ -387,4 +402,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 5 Complete
+**Last Updated**: Session 6 Complete

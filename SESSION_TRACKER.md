@@ -198,12 +198,45 @@
 - AI route requires user authentication and checks repository ownership permissions consistently.
 - Default values and fallback objects conform strictly to standard high-fidelity schemas.
 
+---
+
+### SESSION 6 — PDF Export Backend
+**Status:** `[x] Complete`  
+**Depends on:** Session 5 complete (backend fully working)
+
+**Goal:** Backend PDF report generation using PDFKit, protected export route with ownership verification
+
+**What was built:**
+- [x] `export.service.js` — PDFKit report builder
+  - [x] Cover page (repo name, full name, description, language, stars, forks)
+  - [x] Stats summary section (commits, PRs, issues counts, avg merge time)
+  - [x] Top contributors table (login, commits, additions, deletions, last commit)
+  - [x] Recent commit activity table (message, author, changes, date)
+  - [x] Pull request summary table (number, title, state, created/merged dates)
+  - [x] Issue summary table (number, title, state, created/closed dates)
+  - [x] AI Sprint summary from cached AIInsight
+  - [x] AI Bottleneck analysis from cached AIInsight
+  - [x] AI Recommendations from cached AIInsight
+  - [x] Footer with page numbers on all content pages
+- [x] `export.controller.js` — downloadRepositoryPdf controller
+- [x] `export.routes.js` — GET /repos/:repoId/pdf with authenticateToken
+- [x] Route mounted in `app.js` at `/api/export`
+- [x] Repository ownership verification (400/404/403 error handling)
+- [x] PDF streamed directly to response (no disk storage)
+- [x] Content-Type: application/pdf and Content-Disposition: attachment headers
+- [x] `export.test.js` — 10 comprehensive tests (auth, access control, PDF generation)
+- [x] All 88 tests pass across 6 test suites
+- [x] Docker compose config validated
+- [x] README updated with full export API documentation
+
+**Known issues / carry-forward:**
+- None. Ready for Session 7.
 
 ---
 
-### SESSION 6 — React Frontend (Auth Pages + Dashboard Layout)
+### SESSION 7 — React Frontend (Auth Pages + Dashboard Layout)
 **Status:** `[ ] Not Started`  
-**Depends on:** Session 5 complete (backend fully working)
+**Depends on:** Session 6 complete
 
 **Goal:** Full React app scaffold, auth flow, dashboard shell
 
@@ -236,9 +269,9 @@
 
 ---
 
-### SESSION 7 — Recharts Dashboard (All Charts)
+### SESSION 8 — Recharts Dashboard (All Charts)
 **Status:** `[ ] Not Started`  
-**Depends on:** Session 6 complete
+**Depends on:** Session 7 complete
 
 **Goal:** All 6 chart components connected to real API data
 
@@ -268,9 +301,9 @@
 
 ---
 
-### SESSION 8 — AI Insight Cards UI
+### SESSION 9 — AI Insight Cards UI
 **Status:** `[ ] Not Started`  
-**Depends on:** Session 7 complete
+**Depends on:** Session 8 complete
 
 **Goal:** AI insights panel fully wired to backend, beautiful cards UI
 
@@ -286,34 +319,6 @@
 - [ ] "Last generated X hours ago" timestamp shown
 - [ ] Loading skeleton while AI generates
 - [ ] Error state if Gemini fails
-
-**Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
-
----
-
-### SESSION 9 — PDF Export
-**Status:** `[ ] Not Started`  
-**Depends on:** Session 8 complete
-
-**Goal:** Backend PDF generation + frontend download button
-
-**What was built:**
-- [ ] `export.service.js` — PDFKit report builder
-  - [ ] Cover page (repo name, date range, generated timestamp)
-  - [ ] Stats summary section (commits, PRs, issues counts)
-  - [ ] Top contributors table
-  - [ ] Sprint summary text from AIInsight
-  - [ ] Bottlenecks section
-  - [ ] Recommendations section
-- [ ] `export.routes.js` + `export.controller.js`
-- [ ] GET /export/repos/:repoId/pdf → streams PDF
-- [ ] `Content-Disposition: attachment` header set
-- [ ] `export.api.js` frontend function (axios blob download)
-- [ ] Download button in `InsightsPage.jsx` and `DashboardPage.jsx`
-- [ ] Loading state on download button
 
 **Known issues / carry-forward:**
 ```
@@ -379,13 +384,13 @@ Session 2  [GitHub OAuth]           ██████████  10%
 Session 3  [Sync Engine]            ██████████  10%
 Session 4  [Analytics API]          ██████████  10%
 Session 5  [Gemini AI]              ██████████  10%
-Session 6  [React + Auth UI]        ░░░░░░░░░░  0%
-Session 7  [Recharts Dashboard]     ░░░░░░░░░░  0%
-Session 8  [AI Insight Cards]       ░░░░░░░░░░  0%
-Session 9  [PDF Export]             ░░░░░░░░░░  0%
+Session 6  [PDF Export]             ██████████  10%
+Session 7  [React + Auth UI]        ░░░░░░░░░░  0%
+Session 8  [Recharts Dashboard]     ░░░░░░░░░░  0%
+Session 9  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 5 / 10 Sessions Complete
+Total: 6 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete
