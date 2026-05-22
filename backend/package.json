@@ -1,0 +1,42 @@
+{
+    "name": "devtrackr-backend",
+    "version": "1.0.0",
+    "description": "DevTrackr - AI Developer Productivity Dashboard Backend",
+    "main": "src/server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
+        "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.cjs --runInBand --detectOpenHandles",
+        "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.cjs --watch",
+        "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.cjs --coverage"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@google/generative-ai": "^0.3.0",
+        "@octokit/graphql": "^7.0.0",
+        "@octokit/rest": "^20.0.0",
+        "bcryptjs": "^2.4.3",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "crypto-js": "^4.2.0",
+        "dotenv": "^16.4.5",
+        "express": "^4.18.2",
+        "express-rate-limit": "^7.1.5",
+        "express-validator": "^7.0.0",
+        "helmet": "^7.1.0",
+        "jsonwebtoken": "9.0.0",
+        "mongoose": "^8.0.3",
+        "morgan": "^1.10.0",
+        "pdfkit": "^0.13.0",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "mongodb-memory-server": "^9.1.6",
+        "nodemon": "^3.0.2",
+        "supertest": "^6.3.3"
+    }
+}

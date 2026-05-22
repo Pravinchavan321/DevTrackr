@@ -1,0 +1,60 @@
+
+services:
+  mongo:
+    image: mongo:6.0-alpine
+    container_name: devtrackr_mongo
+    environment:
+      MONGO_INITDB_DATABASE: devtrackr
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/devtrackr
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devtrackr_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: devtrackr_backend
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - backend/.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/__tests__:/app/__tests__
+    command: npm run dev
+    networks:
+      - devtrackr_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: devtrackr_frontend
+    env_file:
+      - frontend/.env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - devtrackr_network
+
+volumes:
+  mongo_data:
+
+networks:
+  devtrackr_network:
+    driver: bridge
