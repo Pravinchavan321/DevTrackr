@@ -263,12 +263,22 @@ npm test:coverage
 
 
 ### Analytics (Session 4+)
-- `GET /api/analytics/repos/:repoId/commits` — List commits
-- `GET /api/analytics/repos/:repoId/commits/chart` — Commits chart data
-- `GET /api/analytics/repos/:repoId/contributors` — Contributor stats
-- `GET /api/analytics/repos/:repoId/pullrequests` — PR analytics
-- `GET /api/analytics/repos/:repoId/issues` — Issue analytics
-- `GET /api/analytics/repos/:repoId/velocity` — Team velocity metrics
+All analytics routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
+- **GET /api/analytics/repos/:repoId/commits** — List paginated commits
+  - **Query Parameters**: `page` (default 1), `limit` (default 10, max 100)
+- **GET /api/analytics/repos/:repoId/commits/chart** — Commits chart data grouped by day or week
+  - **Query Parameters**: `groupBy` (`day` or `week`, default `day`)
+- **GET /api/analytics/repos/:repoId/contributors** — Contributor statistics aggregated from commits
+- **GET /api/analytics/repos/:repoId/pullrequests** — PR analytics and merge times
+  - **Query Parameters**: `page` (default 1), `limit` (default 10), `state` (`open`, `closed`, `all`, default `all`)
+- **GET /api/analytics/repos/:repoId/issues** — Issue analytics and open/closed summary
+  - **Query Parameters**: `page` (default 1), `limit` (default 10), `state` (`open`, `closed`, `all`, default `all`)
+- **GET /api/analytics/repos/:repoId/velocity** — High-level engineering velocity metrics
+
+#### Access Control Rules
+- **Invalid repoId format**: Returns `400 Bad Request`
+- **Repository not found**: Returns `404 Not Found`
+- **Repository belongs to another user**: Returns `403 Forbidden`
 
 ### AI Insights (Session 5+)
 - `POST /api/ai/repos/:repoId/summarize` — Sprint summary
@@ -323,8 +333,8 @@ This project is built in 10 structured sessions:
 
 1. ✅ **Session 1** — Docker + Express + Auth
 2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
-3. ✅ **Session 3** — GitHub Data Sync Engine (CURRENT)
-4. **Session 4** — Analytics API Endpoints
+3. ✅ **Session 3** — GitHub Data Sync Engine
+4. ✅ **Session 4** — Analytics API Endpoints (CURRENT)
 5. **Session 5** — Gemini AI Integration
 6. **Session 6** — React Frontend Auth Pages + Dashboard Layout
 7. **Session 7** — Recharts Dashboard + Charts
@@ -363,4 +373,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 3 Complete
+**Last Updated**: Session 4 Complete

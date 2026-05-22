@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes.js';
 import githubRoutes from './routes/github.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 import errorHandler from './middleware/errorHandler.middleware.js';
 import logger from './config/logger.js';
 
@@ -41,6 +42,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((req, res) => {

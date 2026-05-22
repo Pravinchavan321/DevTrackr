@@ -145,28 +145,26 @@
 ---
 
 ### SESSION 4 — Analytics API Endpoints
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 3 complete
 
 **Goal:** All analytics endpoints with MongoDB aggregation pipelines
 
 **What was built:**
-- [ ] `analytics.routes.js` — all 7 endpoints
-- [ ] `analytics.controller.js` + `analytics.service.js`
-- [ ] GET /analytics/repos/:repoId/commits → paginated commit list
-- [ ] GET /analytics/repos/:repoId/commits/chart → grouped by day/week
-- [ ] GET /analytics/repos/:repoId/contributors → per-author stats (commits, additions, deletions)
-- [ ] GET /analytics/repos/:repoId/pullrequests → PR list with merge time
-- [ ] GET /analytics/repos/:repoId/issues → issue list with open/closed counts
-- [ ] GET /analytics/repos/:repoId/velocity → avgMergeTime, commitsPerDay, prMergeRate
-- [ ] Authorization check: repo must belong to requesting user (403 if not)
-- [ ] All endpoints use `.lean()` for performance
-- [ ] Pagination implemented on list endpoints (page + limit)
+- [x] `analytics.routes.js` — all secure analytics endpoints registered and structured
+- [x] `analytics.controller.js` + `analytics.service.js` using async/await and robust error handling
+- [x] GET /analytics/repos/:repoId/commits → paginated commit list
+- [x] GET /analytics/repos/:repoId/commits/chart → grouped by day/week using MongoDB aggregate pipelines
+- [x] GET /analytics/repos/:repoId/contributors → per-author stats (commits, additions, deletions) avoiding duplicates
+- [x] GET /analytics/repos/:repoId/pullrequests → PR list with calculated `mergeTimeHours`
+- [x] GET /analytics/repos/:repoId/issues → issue list with open/closed count summaries
+- [x] GET /analytics/repos/:repoId/velocity → engineering metrics like avgMergeTime, commitsPerDay, and prMergeRate
+- [x] Authorization check: repo must belong to authenticated user (400 for invalid ID, 404 for missing repo, 403 for unauthorized)
+- [x] All endpoints use `.lean()` for optimal query performance
+- [x] Pagination implemented on list endpoints (page + limit)
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- None. Ready for Session 5.
 
 ---
 
@@ -378,7 +376,7 @@ Follow all rules in RULES.md. Use ONLY the locked stack. Do not use any other li
 Session 1  [Auth + Docker]          ██████████  10%
 Session 2  [GitHub OAuth]           ██████████  10%
 Session 3  [Sync Engine]            ██████████  10%
-Session 4  [Analytics API]          ░░░░░░░░░░  0%
+Session 4  [Analytics API]          ██████████  10%
 Session 5  [Gemini AI]              ░░░░░░░░░░  0%
 Session 6  [React + Auth UI]        ░░░░░░░░░░  0%
 Session 7  [Recharts Dashboard]     ░░░░░░░░░░  0%
@@ -386,7 +384,7 @@ Session 8  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 9  [PDF Export]             ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 3 / 10 Sessions Complete
+Total: 4 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete
