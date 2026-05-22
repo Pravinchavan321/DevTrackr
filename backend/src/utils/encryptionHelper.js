@@ -1,11 +1,18 @@
 import CryptoJS from 'crypto-js';
 import logger from '../config/logger.js';
 
-const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET || 'default_secret_32_chars_minimum';
+const getSecret = () => {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret) {
+    throw new Error('ENCRYPTION_SECRET environment variable is missing.');
+  }
+  return secret;
+};
 
-export const encryptToken = (token) => {
+export const encrypt = (text) => {
   try {
-    const encrypted = CryptoJS.AES.encrypt(token, ENCRYPTION_SECRET).toString();
+    const secret = getSecret();
+    const encrypted = CryptoJS.AES.encrypt(text, secret).toString();
     return encrypted;
   } catch (error) {
     logger.error('Error encrypting token', { error: error.message });
@@ -13,13 +20,22 @@ export const encryptToken = (token) => {
   }
 };
 
-export const decryptToken = (encryptedToken) => {
+export const decrypt = (cipherText) => {
   try {
-    const bytes = CryptoJS.AES.decrypt(encryptedToken, ENCRYPTION_SECRET);
+    const secret = getSecret();
+    const bytes = CryptoJS.AES.decrypt(cipherText, secret);
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+    if (!decrypted) {
+      throw new Error('Decryption resulted in empty string');
+    }
     return decrypted;
   } catch (error) {
     logger.error('Error decrypting token', { error: error.message });
     throw error;
   }
 };
+
+// Aliases for compatibility
+export const encryptToken = encrypt;
+export const decryptToken = decrypt;
+

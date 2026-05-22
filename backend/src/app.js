@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes.js';
+import githubRoutes from './routes/github.routes.js';
 import errorHandler from './middleware/errorHandler.middleware.js';
 import logger from './config/logger.js';
 
@@ -39,6 +40,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/github', githubRoutes);
 
 // 404 handler
 app.use((req, res) => {

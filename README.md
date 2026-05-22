@@ -159,13 +159,18 @@ VITE_GITHUB_CLIENT_ID=your_github_client_id
 
 ### 1. GitHub OAuth App
 
-1. Go to https://github.com/settings/developers
+1. Go to GitHub Developer Settings (https://github.com/settings/developers)
 2. Click "New OAuth App"
-3. Fill in:
+3. Fill in the fields:
    - **Application name**: DevTrackr
-   - **Homepage URL**: http://localhost:5173
-   - **Authorization callback URL**: http://localhost:5000/api/github/callback
-4. Copy Client ID and Client Secret → add to `backend/.env`
+   - **Homepage URL**: `http://localhost:5173`
+   - **Authorization callback URL**: `http://localhost:5000/api/github/callback`
+4. Click "Register application"
+5. Copy the generated **Client ID** into your backend `.env` as `GITHUB_CLIENT_ID`
+6. Generate a new client secret, copy it, and paste it into your backend `.env` as `GITHUB_CLIENT_SECRET`
+7. Ensure `GITHUB_REDIRECT_URI=http://localhost:5000/api/github/callback` is set in your backend `.env`
+8. Ensure `FRONTEND_URL=http://localhost:5173` is set in your backend `.env`
+9. Restart the backend server after making these changes to `.env`
 
 ### 2. Google Gemini API
 
@@ -291,8 +296,8 @@ docker compose logs -f frontend
 
 This project is built in 10 structured sessions:
 
-1. ✅ **Session 1** — Docker + Express + Auth (CURRENT)
-2. **Session 2** — GitHub OAuth + Token Storage + Repo Listing
+1. ✅ **Session 1** — Docker + Express + Auth
+2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing (CURRENT)
 3. **Session 3** — GitHub Data Sync Engine
 4. **Session 4** — Analytics API Endpoints
 5. **Session 5** — Gemini AI Integration
@@ -333,4 +338,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 1 Complete
+**Last Updated**: Session 2 Complete

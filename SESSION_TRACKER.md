@@ -95,29 +95,27 @@
 ---
 
 ### SESSION 2 — GitHub OAuth + Token Storage + Repo Listing
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 1 complete
 
 **Goal:** Full GitHub OAuth connect flow, encrypted token storage, list user repos
 
 **What was built:**
-- [ ] GitHub OAuth App created (Client ID + Secret in .env)
-- [ ] `github.routes.js` → GET /connect, /callback, /repos, /status, DELETE /disconnect
-- [ ] `github.controller.js` + `github.service.js`
-- [ ] `encryptionHelper.js` (AES-256 encrypt/decrypt for GitHub tokens)
-- [ ] OAuth callback exchanges code → GitHub access_token
-- [ ] GitHub token encrypted and saved to User document
-- [ ] `githubConnected`, `githubId`, `githubUsername` set on User after connect
-- [ ] GET /github/repos → fetches user's repos from GitHub API via Octokit
-- [ ] GET /github/status → returns { connected: true/false, username }
-- [ ] DELETE /github/disconnect → clears token + resets fields
-- [ ] CSRF state param validated in callback
-- [ ] Middleware: check githubConnected before GitHub routes
+- [x] GitHub OAuth App created (Client ID + Secret in .env)
+- [x] `github.routes.js` → GET /connect, /callback, /repos, /status, DELETE /disconnect
+- [x] `github.controller.js` + `github.service.js`
+- [x] `encryptionHelper.js` (AES-256 encrypt/decrypt for GitHub tokens)
+- [x] OAuth callback exchanges code → GitHub access_token
+- [x] GitHub token encrypted and saved to User document
+- [x] `githubConnected`, `githubId`, `githubUsername` set on User after connect
+- [x] GET /github/repos → fetches user's repos from GitHub API via Octokit
+- [x] GET /github/status → returns { connected: true/false, username }
+- [x] DELETE /github/disconnect → clears token + resets fields
+- [x] CSRF state param validated in callback
+- [x] Middleware: check githubConnected before GitHub routes
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- None. Ready for Session 3.
 
 ---
 
@@ -380,7 +378,7 @@ Follow all rules in RULES.md. Use ONLY the locked stack. Do not use any other li
 
 ```
 Session 1  [Auth + Docker]          ██████████  10%
-Session 2  [GitHub OAuth]           ░░░░░░░░░░  0%
+Session 2  [GitHub OAuth]           ██████████  10%
 Session 3  [Sync Engine]            ░░░░░░░░░░  0%
 Session 4  [Analytics API]          ░░░░░░░░░░  0%
 Session 5  [Gemini AI]              ░░░░░░░░░░  0%
@@ -390,7 +388,7 @@ Session 8  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 9  [PDF Export]             ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 1 / 10 Sessions Complete
+Total: 2 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete
