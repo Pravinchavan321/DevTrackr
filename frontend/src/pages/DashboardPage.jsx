@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CommandLineIcon,
@@ -6,7 +6,12 @@ import {
   ExclamationCircleIcon,
   BoltIcon,
   ArrowRightIcon,
-  CpuChipIcon
+  CpuChipIcon,
+  CheckCircleIcon,
+  CalendarIcon,
+  DocumentTextIcon,
+  CheckIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../hooks/useAuth';
 import useGithub from '../hooks/useGithub';
@@ -15,11 +20,44 @@ import StatsCard from '../components/dashboard/StatsCard';
 import ActivityFeed from '../components/dashboard/ActivityFeed';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
+import CommitBarChart from '../components/charts/CommitBarChart';
+import VelocityAreaChart from '../components/charts/VelocityAreaChart';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { selectedRepo, isConnected, checkConnectionStatus, statusLoading } = useGithub();
-  const { velocity, loading: analyticsLoading, fetchVelocity } = useAnalytics();
+  
+  const {
+    velocity,
+    commitChart,
+    commits,
+    fetchVelocity,
+    fetchCommitChart,
+    fetchCommits
+  } = useAnalytics();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Unified load callback
+  const loadDashboardData = useCallback(async (repoId) => {
+    if (!repoId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await Promise.all([
+        fetchVelocity(repoId),
+        fetchCommitChart(repoId, { groupBy: 'day' }),
+        fetchCommits(repoId, { page: 1, limit: 10 })
+      ]);
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while loading dashboard metrics. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchVelocity, fetchCommitChart, fetchCommits]);
 
   useEffect(() => {
     checkConnectionStatus();
@@ -27,9 +65,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (selectedRepo) {
-      fetchVelocity(selectedRepo._id);
+      loadDashboardData(selectedRepo._id);
     }
-  }, [selectedRepo, fetchVelocity]);
+  }, [selectedRepo, loadDashboardData]);
 
   if (statusLoading) {
     return (
@@ -87,7 +125,48 @@ export default function DashboardPage() {
     );
   }
 
-  // Case 3: GitHub is connected and a repository is active
+  // Case 3: Error loading repository analytics
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Dashboard Error</h1>
+          <p className="text-sm text-gray-400">Failed to load analytics for {selectedRepo.name}</p>
+        </div>
+        <EmptyState
+          title="Failed to Load Data"
+          description={error}
+          action={
+            <Button variant="primary" onClick={() => loadDashboardData(selectedRepo._id)} className="space-x-2">
+              <ArrowPathIcon className="h-4 w-4" />
+              <span>Retry Load</span>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  // Loading skeleton dashboard view
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-10 bg-gray-900 border border-gray-850 rounded-2xl w-full animate-pulse"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-900 border border-gray-850 rounded-xl animate-pulse"></div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-[380px] bg-gray-900 border border-gray-850 rounded-xl animate-pulse"></div>
+          <div className="h-[380px] bg-gray-900 border border-gray-850 rounded-xl animate-pulse"></div>
+        </div>
+        <div className="h-[400px] bg-gray-900 border border-gray-850 rounded-xl animate-pulse"></div>
+      </div>
+    );
+  }
+
+  // Case 4: GitHub is connected and a repository is active and loaded
   return (
     <div className="space-y-6">
       {/* Welcome Card */}
@@ -108,65 +187,83 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Analytics Metric Cards Grid */}
+      {/* 8 Analytics Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatsCard
           label="Total Commits"
           value={velocity?.totalCommits ?? 0}
           icon={CommandLineIcon}
-          loading={analyticsLoading}
-          description="Paginated commit history"
+          loading={loading}
+          description="Total commits synced"
         />
         <StatsCard
-          label="Merge Rate"
-          value={velocity ? `${Math.round(velocity.prMergeRate ?? 0)}%` : '0%'}
-          icon={ArrowsRightLeftIcon}
-          loading={analyticsLoading}
-          description="PR branch merges"
+          label="Total PRs"
+          value={velocity?.totalPRs ?? 0}
+          icon={DocumentTextIcon}
+          loading={loading}
+          description="Pull requests synced"
+        />
+        <StatsCard
+          label="Merged PRs"
+          value={velocity?.mergedPRs ?? 0}
+          icon={CheckIcon}
+          loading={loading}
+          description="Successfully merged"
         />
         <StatsCard
           label="Open Issues"
-          value={velocity?.openIssuesCount ?? 0}
+          value={velocity?.openIssues ?? 0}
           icon={ExclamationCircleIcon}
-          loading={analyticsLoading}
-          description="Actionable tasks"
+          loading={loading}
+          description="Currently active"
+        />
+        <StatsCard
+          label="Closed Issues"
+          value={velocity?.closedIssues ?? 0}
+          icon={CheckCircleIcon}
+          loading={loading}
+          description="Resolved / completed"
+        />
+        <StatsCard
+          label="Merge Rate"
+          value={`${velocity?.prMergeRate ?? 0}%`}
+          icon={ArrowsRightLeftIcon}
+          loading={loading}
+          description="Ratio of merged PRs"
         />
         <StatsCard
           label="Avg Merge Time"
-          value={velocity ? `${Math.round(velocity.avgMergeTimeHours ?? 0)}h` : '0h'}
+          value={`${Math.round(velocity?.avgMergeTimeHours ?? 0)}h`}
           icon={BoltIcon}
-          loading={analyticsLoading}
-          description="Average velocity"
+          loading={loading}
+          description="Average pull request lifespan"
+        />
+        <StatsCard
+          label="Commits per Day"
+          value={velocity?.commitsPerDay ?? 0}
+          icon={CalendarIcon}
+          loading={loading}
+          description="Velocity daily rate"
         />
       </div>
 
-      {/* Info Callout Card for Next Sessions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Widget: Activity Feed */}
-        <div className="lg:col-span-2">
-          <ActivityFeed selectedRepo={selectedRepo} />
-        </div>
+      {/* Two Column Visual Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ErrorBoundary>
+          <CommitBarChart data={commitChart} title="Daily Commit Frequencies" />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <VelocityAreaChart data={commitChart} title="Engineering Velocity Frequencies" />
+        </ErrorBoundary>
+      </div>
 
-        {/* Right Widget: Session 8 Preview Card */}
-        <div className="bg-gray-900 border border-gray-850 rounded-xl p-6 flex flex-col justify-between space-y-4">
-          <div className="space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
-              Interactive Analytics
-            </span>
-            <h3 className="text-base font-bold text-gray-150">Recharts Visualization Board</h3>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              In the next session, we will fully wire up detailed analytical pages for commits, pull requests, issues, and contributor graphs with animated Area, Bar, Line, Pie, and Radar charts.
-            </p>
-          </div>
-
-          <div className="pt-2 border-t border-gray-800 flex items-center justify-between">
-            <span className="text-xs text-gray-500 font-mono">Scheduled: Session 8</span>
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-indigo-400 group-hover:text-indigo-300">
-              <span>View Plans</span>
-              <ArrowRightIcon className="h-3.5 w-3.5" />
-            </span>
-          </div>
-        </div>
+      {/* Activity Timeline Widget */}
+      <div className="w-full">
+        <ActivityFeed
+          commits={commits?.commits || []}
+          loading={loading}
+          selectedRepo={selectedRepo}
+        />
       </div>
     </div>
   );

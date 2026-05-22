@@ -190,16 +190,40 @@ VITE_GITHUB_CLIENT_ID=your_github_client_id
   ```
 - The frontend then navigates using `window.location.href = response.data.data.url`. Once authorized, GitHub redirects the user back to the backend callback, which securely connects the account and redirects the user back to the frontend `/settings?github=connected` page.
 
-### 🗺️ Frontend Routes
+### 🗺️ Frontend Routes & Pages
 - **Public Routes**: `/` (Landing Page), `/login`, `/register`.
-- **Protected Routes** (rendered inside the responsive dashboard `AppLayout` shell, guarded by `PrivateRoute`):
-  - `/dashboard` — Shell containing a repository selector, stats cards, and activity feeds.
-  - `/commits` — Lightweight commits list view.
-  - `/pullrequests` — Lightweight pull requests list view.
-  - `/issues` — Lightweight issues list view.
-  - `/contributors` — Lightweight contributor analytics view.
-  - `/insights` — Lightweight AI-powered insights report view.
-  - `/settings` — Profile settings containing the interactive GitHub connect card.
+- **Protected Routes** (guarded by `PrivateRoute` and rendered inside the responsive `AppLayout` shell with a global `RepoSelector`):
+  - `/dashboard` — Main overview hub displaying high-level velocity metrics (Total Commits, PR Merge Rate, Average Merge Time, Open Issues), interactive charts (Commit Count preview, additions/deletions activity), and a real-time `ActivityFeed` of recent commits.
+  - `/commits` — Detailed commit trends with group-by toggles (Daily/Weekly), `CommitBarChart` + `CommitLineChart` integration, and a comprehensive paginated commits table displaying authors, SHAs, change stats (additions/deletions), and files changed.
+  - `/pullrequests` — PR lifecycle analysis incorporating a `PRStatusPieChart` (Open vs Merged vs Closed status distributions), and a paginated PR list with creation/merge times and state badges.
+  - `/issues` — Issue tracking view featuring an interactive `IssueHeatmap` showing activity frequency, open/closed summary cards, and a paginated issues list.
+  - `/contributors` — Team collaboration metrics containing a `ContributorRadarChart` summarizing top 5 contributor activity levels (commits, additions, deletions, files changed) alongside detailed contributor cards with avatars and last commit timestamps.
+  - `/insights` — AI-powered insights report view (Session 9 foundation).
+  - `/settings` — Profile settings with the interactive GitHub connect card.
+
+### 📊 Analytics & Recharts Chart Suite
+DevTrackr implements custom high-fidelity responsive charts powered by **Recharts** styled in a dark-mode SaaS Tailwind theme:
+- **`CommitBarChart`**: Displays daily or weekly commit frequencies alongside additions/deletions tooltips.
+- **`CommitLineChart`**: Renders clear visual trend lines showing historical commit velocity.
+- **`PRStatusPieChart`**: Highlights pull request lifecycle distribution with custom HSL-colored segments.
+- **`ContributorRadarChart`**: Provides a radar/spider diagram assessing the top 5 contributors across commits, additions, and file changes.
+- **`VelocityAreaChart`**: Shows smooth HSL gradients representing team engineering additions/deletions and commit velocity.
+- **`IssueHeatmap`**: Tracks active issue volume trends using a custom visual layout.
+
+All dashboard pages and chart components are designed with:
+1. **Repository Guarding**: Automatic display of the `EmptyState` component when no repository is active or selected.
+2. **Robust Loading Skeletons**: Beautiful SVG loading skeletons for all charts and pages to prevent visual jumps.
+3. **Graceful Error Handling**: Individual error states per page/chart with interactive retry buttons to fetch data again.
+4. **Resilient Mocking**: Built-in mocks for `ResizeObserver` and fixed width/height container overrides to guarantee 100% test stability in the Vitest JSDOM environment.
+
+### 🪝 Centralized `useAnalytics` Hook
+A highly reusable react custom hook (`frontend/src/hooks/useAnalytics.js`) encapsulating standard caching, pagination parameters, load states, and error handling for all backend endpoints:
+- `fetchVelocity(repoId)`
+- `fetchCommitChart(repoId, params)`
+- `fetchCommits(repoId, params)`
+- `fetchContributors(repoId)`
+- `fetchPullRequests(repoId, params)`
+- `fetchIssues(repoId, params)`
 
 ## 🔐 Setting Up External Services
 
@@ -412,8 +436,8 @@ This project is built in 10 structured sessions:
 4. ✅ **Session 4** — Analytics API Endpoints
 5. ✅ **Session 5** — Gemini AI Integration
 6. ✅ **Session 6** — PDF Export Backend
-7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout (CURRENT)
-8. **Session 8** — Recharts Dashboard + Charts
+7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout
+8. ✅ **Session 8** — Recharts Dashboard + Charts (CURRENT)
 9. **Session 9** — AI Insight Cards UI
 10. **Session 10** Polish, Error Handling, Deployment Config
 
@@ -448,4 +472,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 7 Complete
+**Last Updated**: Session 8 Complete

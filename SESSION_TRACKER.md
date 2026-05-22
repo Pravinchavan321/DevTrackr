@@ -268,34 +268,32 @@
 ---
 
 ### SESSION 8 — Recharts Dashboard (All Charts)
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 7 complete
 
 **Goal:** All 6 chart components connected to real API data
 
 **What was built:**
-- [ ] `chartHelpers.js` — transforms API data → Recharts-compatible arrays
-- [ ] `useAnalytics.js` hook — fetches analytics data per repo
-- [ ] `CommitBarChart.jsx` — daily commits (BarChart + ResponsiveContainer)
-- [ ] `CommitLineChart.jsx` — commit trend over time (LineChart)
-- [ ] `PRStatusPieChart.jsx` — open vs merged vs closed (PieChart)
-- [ ] `ContributorRadarChart.jsx` — per-contributor metrics (RadarChart)
-- [ ] `VelocityAreaChart.jsx` — sprint velocity trend (AreaChart)
-- [ ] `IssueHeatmap.jsx` — issues by day (custom grid or BarChart)
-- [ ] `CommitsPage.jsx` — commit list table + CommitBarChart
-- [ ] `PullRequestsPage.jsx` — PR table + PRStatusPieChart
-- [ ] `IssuesPage.jsx` — issue list + open/closed counters
-- [ ] `ContributorsPage.jsx` — contributor cards + RadarChart
-- [ ] `ActivityFeed.jsx` — recent 10 commits on dashboard
-- [ ] `SyncButton.jsx` — triggers sync with loading spinner
-- [ ] `ErrorBoundary.jsx` wrapping each chart
-- [ ] All charts use `<ResponsiveContainer width="100%" height={300}>`
-- [ ] Empty state shown when no data
+- [x] `chartHelpers.js` — transforms API data → Recharts-compatible arrays
+- [x] `useAnalytics.js` hook — fetches analytics data per repo
+- [x] `CommitBarChart.jsx` — daily commits (BarChart + ResponsiveContainer)
+- [x] `CommitLineChart.jsx` — commit trend over time (LineChart)
+- [x] `PRStatusPieChart.jsx` — open vs merged vs closed (PieChart)
+- [x] `ContributorRadarChart.jsx` — per-contributor metrics (RadarChart)
+- [x] `VelocityAreaChart.jsx` — sprint velocity trend (AreaChart)
+- [x] `IssueHeatmap.jsx` — issues by day (custom grid or BarChart)
+- [x] `CommitsPage.jsx` — commit list table + CommitBarChart
+- [x] `PullRequestsPage.jsx` — PR table + PRStatusPieChart
+- [x] `IssuesPage.jsx` — issue list + open/closed counters
+- [x] `ContributorsPage.jsx` — contributor cards + RadarChart
+- [x] `ActivityFeed.jsx` — recent 10 commits on dashboard
+- [x] `SyncButton.jsx` — triggers sync with loading spinner
+- [x] `ErrorBoundary.jsx` wrapping each chart
+- [x] All charts use `<ResponsiveContainer width="100%" height={300}>`
+- [x] Empty state shown when no data
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- Recharts requires ResizeObserver mocking and fixed width/height container wrappers in tests to be JSDOM-safe. All components are robustly configured for safe production rendering and test compatibility.
 
 ---
 
@@ -384,11 +382,11 @@ Session 4  [Analytics API]          ██████████  10%
 Session 5  [Gemini AI]              ██████████  10%
 Session 6  [PDF Export]             ██████████  10%
 Session 7  [React + Auth UI]        ██████████  10%
-Session 8  [Recharts Dashboard]     ░░░░░░░░░░  0%
+Session 8  [Recharts Dashboard]     ██████████  10%
 Session 9  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 7 / 10 Sessions Complete
+Total: 8 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete
