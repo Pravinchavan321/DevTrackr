@@ -235,7 +235,32 @@ npm test:coverage
 - `GET /api/github/status` — Check GitHub connection
 - `DELETE /api/github/disconnect` — Disconnect GitHub
 - `GET /api/github/repos` — List user's repos
-- `POST /api/github/repos/:repoFullName/sync` — Sync repo data
+- `POST /api/github/repos/:repoFullName/sync` — Sync repo data (incremental)
+  - **Parameters**: `:repoFullName` (URL-encoded string representing `owner/repo`, e.g. `facebook%2Freact`)
+  - **Headers**: `Authorization: Bearer <JWT_ACCESS_TOKEN>`
+  - **Success Response** (200 OK):
+    ```json
+    {
+      "success": true,
+      "message": "Repository synced successfully",
+      "data": {
+        "repository": {
+          "id": "60d0fe4f5311236168a10aa4",
+          "githubRepoId": 10270250,
+          "name": "react",
+          "fullName": "facebook/react",
+          "lastSyncedAt": "2026-05-22T08:00:00.000Z"
+        },
+        "summary": {
+          "commitsSynced": 30,
+          "pullRequestsSynced": 30,
+          "issuesSynced": 15
+        },
+        "warning": null
+      }
+    }
+    ```
+
 
 ### Analytics (Session 4+)
 - `GET /api/analytics/repos/:repoId/commits` — List commits
@@ -297,8 +322,8 @@ docker compose logs -f frontend
 This project is built in 10 structured sessions:
 
 1. ✅ **Session 1** — Docker + Express + Auth
-2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing (CURRENT)
-3. **Session 3** — GitHub Data Sync Engine
+2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
+3. ✅ **Session 3** — GitHub Data Sync Engine (CURRENT)
 4. **Session 4** — Analytics API Endpoints
 5. **Session 5** — Gemini AI Integration
 6. **Session 6** — React Frontend Auth Pages + Dashboard Layout
@@ -338,4 +363,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 2 Complete
+**Last Updated**: Session 3 Complete

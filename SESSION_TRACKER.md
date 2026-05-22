@@ -120,29 +120,27 @@
 ---
 
 ### SESSION 3 — GitHub Data Sync Engine
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 2 complete
 
 **Goal:** Fetch commits, PRs, issues from GitHub and store in MongoDB
 
 **What was built:**
-- [ ] `Repository.model.js`, `Commit.model.js`, `PullRequest.model.js`, `Issue.model.js`
-- [ ] `sync.service.js` — full sync engine
-  - [ ] fetchAndSaveCommits() — Octokit paginated commits, incremental via `since`
-  - [ ] fetchAndSaveIssues() — open + closed issues
-  - [ ] fetchAndSavePullRequests() — all PR states with stats
-  - [ ] upsert strategy (update if SHA/number exists, insert if new)
-  - [ ] Update `lastSyncedAt` on Repository after sync
-- [ ] `githubDataMapper.js` — maps raw GitHub API → Mongoose schema
-- [ ] POST /github/repos/:repoFullName/sync → triggers full sync job
-- [ ] Repository saved to DB on first sync (if not exists)
-- [ ] Rate limit check: reads x-ratelimit-remaining header
-- [ ] Sync job handles GitHub API errors gracefully (no crash)
+- [x] `Repository.model.js`, `Commit.model.js`, `PullRequest.model.js`, `Issue.model.js`
+- [x] `sync.service.js` — full sync engine
+  - [x] fetchAndSaveCommits() — Octokit paginated commits, incremental via `since`
+  - [x] fetchAndSaveIssues() — open + closed issues
+  - [x] fetchAndSavePullRequests() — all PR states with stats
+  - [x] upsert strategy (update if SHA/number exists, insert if new)
+  - [x] Update `lastSyncedAt` on Repository after sync
+- [x] `githubDataMapper.js` — maps raw GitHub API → Mongoose schema
+- [x] POST /github/repos/:repoFullName/sync → triggers full sync job
+- [x] Repository saved to DB on first sync (if not exists)
+- [x] Rate limit check: reads x-ratelimit-remaining header
+- [x] Sync job handles GitHub API errors gracefully (no crash)
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- None. Ready for Session 4.
 
 ---
 
@@ -379,7 +377,7 @@ Follow all rules in RULES.md. Use ONLY the locked stack. Do not use any other li
 ```
 Session 1  [Auth + Docker]          ██████████  10%
 Session 2  [GitHub OAuth]           ██████████  10%
-Session 3  [Sync Engine]            ░░░░░░░░░░  0%
+Session 3  [Sync Engine]            ██████████  10%
 Session 4  [Analytics API]          ░░░░░░░░░░  0%
 Session 5  [Gemini AI]              ░░░░░░░░░░  0%
 Session 6  [React + Auth UI]        ░░░░░░░░░░  0%
@@ -388,7 +386,7 @@ Session 8  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 9  [PDF Export]             ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 2 / 10 Sessions Complete
+Total: 3 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete

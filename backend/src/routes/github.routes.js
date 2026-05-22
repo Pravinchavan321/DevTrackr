@@ -21,6 +21,10 @@ router.get('/status', authenticateToken, githubController.status);
 // Protected: Lists connected user's repositories
 router.get('/repos', authenticateToken, requireGithubConnected, githubController.repos);
 
+// POST /api/github/repos/:repoFullName/sync
+// Protected: Syncs repository commits, PRs, and issues
+router.post('/repos/:repoFullName/sync', authenticateToken, requireGithubConnected, githubController.syncRepository);
+
 // DELETE /api/github/disconnect
 // Protected: Resets GitHub connection fields
 router.delete('/disconnect', authenticateToken, githubController.disconnect);

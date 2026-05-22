@@ -1,4 +1,5 @@
 import * as githubService from '../services/github.service.js';
+import * as syncService from '../services/sync.service.js';
 import { sendSuccess, sendError } from '../utils/responseHelper.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import logger from '../config/logger.js';
@@ -86,3 +87,15 @@ export const disconnect = asyncHandler(async (req, res) => {
   await githubService.disconnectGitHub(userId);
   sendSuccess(res, {}, 'GitHub account disconnected successfully');
 });
+
+/**
+ * Syncs repository commits, PRs, and issues
+ */
+export const syncRepository = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const repoFullName = decodeURIComponent(req.params.repoFullName);
+
+  const result = await syncService.syncRepository(userId, repoFullName);
+  sendSuccess(res, result, 'Repository synced successfully');
+});
+
