@@ -3,6 +3,7 @@ import { Octokit } from '@octokit/rest';
 import User from '../models/User.model.js';
 import { encrypt, decrypt } from '../utils/encryptionHelper.js';
 import logger from '../config/logger.js';
+import Repository from '../models/Repository.model.js';
 
 const isPlaceholderValue = (value) => {
   if (!value) {
@@ -52,7 +53,7 @@ export const generateGitHubAuthUrl = (userId) => {
   const scope = 'repo read:user user:email';
   const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
-  )}&scope=${encodeURIComponent(scope)}&state=${state}`;
+  )}&scope=${encodeURIComponent(scope)}&state=${state}&prompt=select_account`;
 
   return { url, state };
 };
@@ -204,7 +205,12 @@ export const getUserRepos = async (userId) => {
     per_page: 100
   });
 
+  // Fetch synced repositories to map their database _id
+  const syncedRepos = await Repository.find({ userId }).lean();
+  const syncedMap = new Map(syncedRepos.map((r) => [r.githubRepoId, r._id]));
+
   return repos.map((repo) => ({
+    _id: syncedMap.get(repo.id) || null,
     id: repo.id,
     name: repo.name,
     fullName: repo.full_name,

@@ -19,7 +19,8 @@ export default function useGithub() {
     setConnectionStatus,
     setStatusLoading,
     setReposLoading,
-    clearRepos
+    clearRepos,
+    activeUserId
   } = useRepoStore();
 
   const checkConnectionStatus = useCallback(async () => {
@@ -27,17 +28,32 @@ export default function useGithub() {
     try {
       const response = await githubApi.getGithubStatus();
       if (response && response.success) {
+        const nextConnected = response.data.connected;
+        const nextUsername = response.data.username || '';
+
+        if (!nextConnected) {
+          clearRepos();
+          return;
+        }
+
+        if (githubUsername && githubUsername !== nextUsername) {
+          setRepos([]);
+          setSelectedRepo(null);
+        }
+
         setConnectionStatus({
-          isConnected: response.data.connected,
-          githubUsername: response.data.username || ''
+          isConnected: nextConnected,
+          githubUsername: nextUsername
         });
+      } else {
+        clearRepos();
       }
     } catch (error) {
-      setConnectionStatus({ isConnected: false, githubUsername: '' });
+      clearRepos();
     } finally {
       setStatusLoading(false);
     }
-  }, [setConnectionStatus, setStatusLoading]);
+  }, [clearRepos, githubUsername, setConnectionStatus, setRepos, setSelectedRepo, setStatusLoading]);
 
   const connect = useCallback(async () => {
     try {
@@ -73,14 +89,27 @@ export default function useGithub() {
     try {
       const response = await githubApi.getRepos();
       if (response && response.success) {
-        setRepos(response.data || []);
+        const fetchedRepos = response.data || [];
+        setRepos(fetchedRepos);
+
+        // Auto-select repo from localStorage
+        if (activeUserId && fetchedRepos.length > 0) {
+          const key = `devtrackr_selected_repo_name_${activeUserId}`;
+          const savedRepoName = localStorage.getItem(key);
+          if (savedRepoName) {
+            const match = fetchedRepos.find((r) => r.fullName === savedRepoName);
+            if (match) {
+              setSelectedRepo(match);
+            }
+          }
+        }
       }
     } catch (error) {
       setRepos([]);
     } finally {
       setReposLoading(false);
     }
-  }, [isConnected, setRepos]);
+  }, [isConnected, setRepos, setSelectedRepo, activeUserId]);
 
   const syncRepository = useCallback(async () => {
     if (!selectedRepo) return { success: false, message: 'No repository selected' };

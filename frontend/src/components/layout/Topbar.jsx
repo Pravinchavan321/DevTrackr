@@ -8,13 +8,17 @@ import {
 import useUiStore from '../../store/uiStore';
 import useAuth from '../../hooks/useAuth';
 import useGithub from '../../hooks/useGithub';
+import useRepoStore from '../../store/repoStore';
 import RepoSelector from '../dashboard/RepoSelector';
 import SyncButton from '../dashboard/SyncButton';
 
 export default function Topbar() {
   const { toggleSidebar, theme, toggleTheme } = useUiStore();
   const { user, logout } = useAuth();
-  const { isConnected } = useGithub();
+  const { isConnected, statusLoading } = useGithub();
+  const activeUserId = useRepoStore((state) => state.activeUserId);
+  const userId = user?._id || user?.id || null;
+  const showRepositoryControls = isConnected && !statusLoading && activeUserId === userId;
   const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
 
   return (
@@ -31,7 +35,7 @@ export default function Topbar() {
         </button>
 
         {/* Global Repository Controls */}
-        {isConnected && (
+        {showRepositoryControls && (
           <div className="flex items-center space-x-3">
             <RepoSelector />
             <SyncButton />
@@ -52,13 +56,13 @@ export default function Topbar() {
         </button>
 
         <div className="hidden sm:flex flex-col text-right">
-          <span className="text-sm font-semibold text-gray-100">{user?.name || 'Developer'}</span>
+          <span className="text-sm font-semibold text-gray-100">{user?.name || 'Loading...'}</span>
           <span className="text-xs text-gray-400">{user?.email}</span>
         </div>
 
         {/* Avatar Placeholder */}
         <div className="h-9 w-9 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm shadow-sm select-none">
-          {(user?.name || 'D').substring(0, 1).toUpperCase()}
+          {(user?.name || '?').substring(0, 1).toUpperCase()}
         </div>
 
         {/* Vertical divider */}

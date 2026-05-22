@@ -11,7 +11,8 @@ const initGemini = () => {
     }
 
     geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    logger.info('Gemini AI client initialized');
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    logger.info(`Gemini AI client initialized with model: ${modelName}`);
     return geminiClient;
   } catch (error) {
     logger.error('Failed to initialize Gemini', { error: error.message });

@@ -9,6 +9,7 @@ import SprintSummaryCard from '../components/insights/SprintSummaryCard';
 import BottleneckCard from '../components/insights/BottleneckCard';
 import ContributorAnalysisCard from '../components/insights/ContributorAnalysisCard';
 import RecommendationsCard from '../components/insights/RecommendationsCard';
+import SyncButton from '../components/dashboard/SyncButton';
 
 /**
  * InsightsPage connects the React frontend to Gemini AI Insights and PDFKit Export APIs.
@@ -47,6 +48,26 @@ export default function InsightsPage() {
         <EmptyState
           title="Select a repository"
           description="Choose a synced repository to generate AI insights."
+        />
+      </div>
+    );
+  }
+
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">AI Developer Insights</h1>
+          <p className="text-sm text-gray-400">Sprint summaries, systemic bottlenecks, and contributor analysis.</p>
+        </div>
+        <EmptyState
+          title="Sync Required"
+          description="To generate AI insights with Gemini, we first need to import this repository's commits, issues, and pull requests."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

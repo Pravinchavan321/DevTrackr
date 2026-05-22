@@ -7,7 +7,7 @@
 
 DevTrackr is a full-stack web application where developers connect their GitHub account and receive AI-generated productivity insights, sprint summaries, commit analytics, and bottleneck detection.
 
-**AI Engine:** Google Gemini API (`gemini-1.5-flash` or `gemini-1.5-pro`)
+**AI Engine:** Google Gemini API (`gemini-2.5-flash` or `gemini-2.5-pro`)
 **Auth:** JWT (access + refresh tokens) + bcrypt
 **Data Sources:** GitHub REST API v3 + GitHub GraphQL API v4
 

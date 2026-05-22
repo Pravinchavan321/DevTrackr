@@ -40,7 +40,7 @@ export default function useInsights() {
         };
         
         insightsArray.forEach(item => {
-          if (item && item.type && mapped[item.type] === undefined) {
+          if (item && item.type && mapped[item.type] === null) {
             // Keep the latest one per type, which sort generatedAt: -1 handles
             mapped[item.type] = item;
           } else if (item && item.type) {

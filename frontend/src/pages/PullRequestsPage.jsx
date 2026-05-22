@@ -9,6 +9,7 @@ import Badge from '../components/common/Badge';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { formatDate } from '../utils/dateHelpers';
 import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import SyncButton from '../components/dashboard/SyncButton';
 
 export default function PullRequestsPage() {
   const { selectedRepo } = useGithub();
@@ -37,7 +38,7 @@ export default function PullRequestsPage() {
   }, [fetchPullRequests]);
 
   useEffect(() => {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo._id) {
       loadPRsData(selectedRepo._id, page, stateFilter);
     }
   }, [selectedRepo, page, stateFilter, loadPRsData]);
@@ -57,6 +58,26 @@ export default function PullRequestsPage() {
         <EmptyState
           title="No Repository Selected"
           description="Please select a repository in the top bar or connect your GitHub account in settings to view pull request history."
+        />
+      </div>
+    );
+  }
+
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Pull Requests</h1>
+          <p className="text-sm text-gray-400">Detailed pull request merges, durations, and state splits.</p>
+        </div>
+        <EmptyState
+          title="Sync Required"
+          description="To view pull request summaries, merge volumes, and duration details, we first need to import this repository's data from GitHub."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

@@ -4,13 +4,32 @@ import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import ErrorBoundary from '../common/ErrorBoundary';
 import useGithub from '../../hooks/useGithub';
+import useAuth from '../../hooks/useAuth';
+import useRepoStore from '../../store/repoStore';
 
 export default function AppLayout() {
+  const { user } = useAuth();
   const { checkConnectionStatus } = useGithub();
+  const activeUserId = useRepoStore((state) => state.activeUserId);
+  const clearRepos = useRepoStore((state) => state.clearRepos);
+  const setActiveUserId = useRepoStore((state) => state.setActiveUserId);
+  const userId = user?._id || user?.id || null;
 
   useEffect(() => {
+    if (!userId) {
+      clearRepos();
+      setActiveUserId(null);
+      return;
+    }
+
+    if (activeUserId !== userId) {
+      clearRepos();
+      setActiveUserId(userId);
+      return;
+    }
+
     checkConnectionStatus();
-  }, [checkConnectionStatus]);
+  }, [activeUserId, checkConnectionStatus, clearRepos, setActiveUserId, userId]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100 font-sans">

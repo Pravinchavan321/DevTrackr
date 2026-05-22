@@ -9,6 +9,7 @@ import CommitLineChart from '../components/charts/CommitLineChart';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { formatDate } from '../utils/dateHelpers';
 import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import SyncButton from '../components/dashboard/SyncButton';
 
 export default function CommitsPage() {
   const { selectedRepo } = useGithub();
@@ -42,7 +43,7 @@ export default function CommitsPage() {
   }, [fetchCommits, fetchCommitChart]);
 
   useEffect(() => {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo._id) {
       loadCommitsData(selectedRepo._id, page, groupBy);
     }
   }, [selectedRepo, page, groupBy, loadCommitsData]);
@@ -62,6 +63,26 @@ export default function CommitsPage() {
         <EmptyState
           title="No Repository Selected"
           description="Please select a repository in the top bar or connect your GitHub account in settings to view commit history."
+        />
+      </div>
+    );
+  }
+
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Commit Analytics</h1>
+          <p className="text-sm text-gray-405">Detailed repository commit logs and trends over time.</p>
+        </div>
+        <EmptyState
+          title="Sync Required"
+          description="To view commit logs, daily frequencies, and volume trends, we first need to import this repository's data from GitHub."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

@@ -8,6 +8,7 @@ import ContributorRadarChart from '../components/charts/ContributorRadarChart';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { formatDate } from '../utils/dateHelpers';
 import { ArrowPathIcon, UserIcon } from '@heroicons/react/24/outline';
+import SyncButton from '../components/dashboard/SyncButton';
 
 export default function ContributorsPage() {
   const { selectedRepo } = useGithub();
@@ -34,7 +35,7 @@ export default function ContributorsPage() {
   }, [fetchContributors]);
 
   useEffect(() => {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo._id) {
       loadContributorsData(selectedRepo._id);
     }
   }, [selectedRepo, loadContributorsData]);
@@ -49,6 +50,26 @@ export default function ContributorsPage() {
         <EmptyState
           title="No Repository Selected"
           description="Please select a repository in the top bar or connect your GitHub account in settings to view contributor logs."
+        />
+      </div>
+    );
+  }
+
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Repository Contributors</h1>
+          <p className="text-sm text-gray-400">Detailed contributors lists, commits, additions, and deletions.</p>
+        </div>
+        <EmptyState
+          title="Sync Required"
+          description="To view contributor profiles, Radar charts, additions, and deletions, we first need to import this repository's data from GitHub."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

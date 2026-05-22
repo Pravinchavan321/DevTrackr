@@ -23,6 +23,7 @@ import Button from '../components/common/Button';
 import CommitBarChart from '../components/charts/CommitBarChart';
 import VelocityAreaChart from '../components/charts/VelocityAreaChart';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import SyncButton from '../components/dashboard/SyncButton';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -64,7 +65,7 @@ export default function DashboardPage() {
   }, [checkConnectionStatus]);
 
   useEffect(() => {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo._id) {
       loadDashboardData(selectedRepo._id);
     }
   }, [selectedRepo, loadDashboardData]);
@@ -120,6 +121,28 @@ export default function DashboardPage() {
         <EmptyState
           title="No Repository Selected"
           description="Choose a repository from the selector dropdown in the top bar to initialize sync engines and view metrics dashboards."
+        />
+      </div>
+    );
+  }
+
+  // Case 2.5: Repository is selected, but has not been synced yet (no database _id)
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Repository: {selectedRepo.name}</h1>
+          <p className="text-sm text-gray-400">This repository has not been synced with DevTrackr yet.</p>
+        </div>
+
+        <EmptyState
+          title="Sync Required"
+          description="To view charts, commit timeline activity, and generate AI-powered engineering insights, we first need to import this repository's commits, issues, and pull requests from GitHub."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

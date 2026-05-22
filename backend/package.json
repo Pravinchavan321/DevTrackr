@@ -15,7 +15,7 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "@google/generative-ai": "^0.3.0",
+        "@google/generative-ai": "^0.21.0",
         "@octokit/graphql": "^7.0.0",
         "@octokit/rest": "^20.0.0",
         "bcryptjs": "^2.4.3",

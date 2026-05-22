@@ -78,7 +78,7 @@ const total = await Model.countDocuments(query);
 
 ## 🤖 5. Gemini AI Rules
 
-- Model: always use `gemini-1.5-flash` for speed (switch to `gemini-1.5-pro` only for deep analysis)
+- Model: always use `gemini-2.5-flash` for speed (switch to `gemini-2.5-pro` only for deep analysis)
 - Always wrap Gemini calls in try/catch — AI calls can fail silently
 - Always validate Gemini JSON response before saving — use `JSON.parse` inside try/catch
 - Cache all insights in `AIInsight` collection with 24h TTL — never call Gemini twice for same data in 24h

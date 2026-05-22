@@ -13,7 +13,7 @@ const callGeminiWithRetry = async (prompt) => {
     return null;
   }
   
-  const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const model = client.getGenerativeModel({ model: modelName });
 
   const cleanAndParse = (text) => {
@@ -54,6 +54,8 @@ export const generateSprintSummary = async (inputData) => {
   
   if (!parsed) {
     return {
+      _aiError: true,
+      _aiErrorMessage: 'Gemini AI service is currently unavailable. Please verify your API key configuration.',
       summary: 'AI summary is temporarily unavailable.',
       velocity: 'unknown',
       highlights: [],
@@ -74,6 +76,8 @@ export const generateBottleneckAnalysis = async (inputData) => {
   
   if (!parsed) {
     return {
+      _aiError: true,
+      _aiErrorMessage: 'Gemini AI service is currently unavailable. Please verify your API key configuration.',
       bottlenecks: [],
       riskLevel: 'unknown',
       topRecommendation: 'AI bottleneck analysis is temporarily unavailable.'
@@ -92,6 +96,8 @@ export const generateContributorAnalysis = async (inputData) => {
   
   if (!parsed) {
     return {
+      _aiError: true,
+      _aiErrorMessage: 'Gemini AI service is currently unavailable. Please verify your API key configuration.',
       activeContributors: 0,
       inactiveContributors: [],
       busContributors: [],
@@ -112,6 +118,8 @@ export const generateRecommendations = async (inputData) => {
   
   if (!parsed) {
     return {
+      _aiError: true,
+      _aiErrorMessage: 'Gemini AI service is currently unavailable. Please verify your API key configuration.',
       recommendations: [],
       nextBestAction: 'AI recommendations are temporarily unavailable.'
     };

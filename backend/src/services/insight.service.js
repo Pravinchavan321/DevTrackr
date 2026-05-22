@@ -163,6 +163,17 @@ export const generateSprintSummary = async (repoId, userId, options = {}) => {
   };
 
   const parsedData = await geminiService.generateSprintSummary(inputData);
+
+  // Do NOT cache error fallback data — return directly so fixing the API key works immediately
+  if (parsedData._aiError) {
+    return {
+      type: 'sprint_summary',
+      cached: false,
+      parsedData,
+      generatedAt: new Date()
+    };
+  }
+
   const saved = await saveInsight(repoId, userId, 'sprint_summary', parsedData, { from, to });
 
   return {
@@ -261,6 +272,17 @@ export const generateBottleneckAnalysis = async (repoId, userId, options = {}) =
   };
 
   const parsedData = await geminiService.generateBottleneckAnalysis(inputData);
+
+  // Do NOT cache error fallback data
+  if (parsedData._aiError) {
+    return {
+      type: 'bottleneck',
+      cached: false,
+      parsedData,
+      generatedAt: new Date()
+    };
+  }
+
   const saved = await saveInsight(repoId, userId, 'bottleneck', parsedData);
 
   return {
@@ -335,6 +357,17 @@ export const generateContributorAnalysis = async (repoId, userId, options = {}) 
   };
 
   const parsedData = await geminiService.generateContributorAnalysis(inputData);
+
+  // Do NOT cache error fallback data
+  if (parsedData._aiError) {
+    return {
+      type: 'contributor_analysis',
+      cached: false,
+      parsedData,
+      generatedAt: new Date()
+    };
+  }
+
   const saved = await saveInsight(repoId, userId, 'contributor_analysis', parsedData);
 
   return {
@@ -416,6 +449,17 @@ export const generateRecommendations = async (repoId, userId, options = {}) => {
   };
 
   const parsedData = await geminiService.generateRecommendations(inputData);
+
+  // Do NOT cache error fallback data
+  if (parsedData._aiError) {
+    return {
+      type: 'recommendations',
+      cached: false,
+      parsedData,
+      generatedAt: new Date()
+    };
+  }
+
   const saved = await saveInsight(repoId, userId, 'recommendations', parsedData);
 
   return {

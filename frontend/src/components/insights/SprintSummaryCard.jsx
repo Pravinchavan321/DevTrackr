@@ -75,7 +75,19 @@ export default function SprintSummaryCard({
       </form>
 
       {/* Structured Sprint Summary Display */}
-      {parsedData ? (
+      {parsedData?._aiError ? (
+        <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5 space-y-2 text-center">
+          <div className="flex justify-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+          <h4 className="text-sm font-semibold text-gray-200">AI Service Unavailable</h4>
+          <p className="text-xs text-gray-400 leading-relaxed">{parsedData._aiErrorMessage || 'Gemini AI is temporarily unavailable. Please check your API key configuration and try again.'}</p>
+        </div>
+      ) : parsedData ? (
         <div className="space-y-5">
           {/* Executive Overview Row */}
           <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-800 bg-gray-950/20">

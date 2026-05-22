@@ -10,6 +10,7 @@ import Badge from '../components/common/Badge';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { formatDate } from '../utils/dateHelpers';
 import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import SyncButton from '../components/dashboard/SyncButton';
 
 export default function IssuesPage() {
   const { selectedRepo } = useGithub();
@@ -38,7 +39,7 @@ export default function IssuesPage() {
   }, [fetchIssues]);
 
   useEffect(() => {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo._id) {
       loadIssuesData(selectedRepo._id, page, stateFilter);
     }
   }, [selectedRepo, page, stateFilter, loadIssuesData]);
@@ -58,6 +59,26 @@ export default function IssuesPage() {
         <EmptyState
           title="No Repository Selected"
           description="Please select a repository in the top bar or connect your GitHub account in settings to view issue trackers."
+        />
+      </div>
+    );
+  }
+
+  if (selectedRepo && !selectedRepo._id) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-gray-800">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Issue Tracker</h1>
+          <p className="text-sm text-gray-400">Detailed issues summaries, state grids, and active workflows.</p>
+        </div>
+        <EmptyState
+          title="Sync Required"
+          description="To view active issues list, status distributions, and volume trends, we first need to import this repository's data from GitHub."
+          action={
+            <div className="flex justify-center">
+              <SyncButton />
+            </div>
+          }
         />
       </div>
     );

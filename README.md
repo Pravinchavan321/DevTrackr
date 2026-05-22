@@ -1,58 +1,60 @@
-# DevTrackr — AI Developer Productivity Dashboard
+# DevTrackr
 
-A full-stack web application that helps developers understand their productivity through AI-powered insights, GitHub integration, and advanced analytics.
+[![Repo](https://img.shields.io/badge/github-Pravinchavan321/DevTrackr-blue)](https://github.com/Pravinchavan321/DevTrackr)
+[![Docker Compose](https://img.shields.io/badge/docker-compose-blue)](https://docs.docker.com/compose/)
+[![Node.js](https://img.shields.io/badge/node-18+-green)](https://nodejs.org/)
 
-## 🎯 Features
+DevTrackr is a polished full-stack developer productivity dashboard that combines GitHub analytics, AI-powered insights, and PDF reporting inside a modern React + Node.js + MongoDB application.
 
-- ✅ **User Authentication** — Register, login, JWT-based auth with refresh tokens
-- 🔐 **GitHub OAuth Integration** — Connect your GitHub account securely
-- 📊 **Repository Analytics** — Sync commits, PRs, issues from multiple repos
-- 🤖 **AI Insights** — Sprint summaries, bottleneck detection, contributor analysis via Google Gemini
-- 📈 **Interactive Charts** — Commit trends, PR velocity, contributor activity using Recharts
-- 📋 **PDF Export** — Generate detailed productivity reports
-- 🐳 **Docker Support** — Run locally or deploy with Docker Compose
+## Live Local App Access
 
-## 🛠️ Tech Stack
+After running the app with Docker Compose, access the complete UI here:
 
-| Layer        | Technology                                      |
-|--------------|-------------------------------------------------|
-| **Frontend** | React 18, Vite, Tailwind CSS, Recharts, Zustand |
-| **Backend**  | Node.js, Express.js, MongoDB, Mongoose         |
-| **Auth**     | JWT (access + refresh tokens), bcrypt          |
-| **AI**       | Google Gemini API                              |
-| **GitHub**   | GitHub REST API v3 + GraphQL v4 (Octokit)      |
-| **Export**   | PDFKit                                          |
-| **DevOps**   | Docker + Docker Compose                        |
-| **Testing**  | Jest, Supertest, mongodb-memory-server         |
+- Frontend UI: http://localhost:5173
+- Backend API: http://localhost:5000/api
 
-## 📁 Project Structure
+The application is fully orchestrated via Docker Compose, including MongoDB, backend, and frontend services.
+
+## What DevTrackr Does
+
+DevTrackr helps developers and teams monitor engineering velocity, identify bottlenecks, and get AI-generated suggestions from GitHub repository data.
+
+Core capabilities:
+- Secure user registration and login
+- GitHub OAuth integration for repo sync
+- Commit, pull request, issue, and contributor analytics
+- AI insights and sprint summaries via Google Gemini
+- PDF report export for team performance metrics
+- Docker Compose deployment for fast local setup
+
+## Project Structure
 
 ```
 devtrackr/
 ├── backend/
 │   ├── src/
-│   │   ├── config/       (db, logger, gemini)
-│   │   ├── models/       (User, Repository, Commit, etc.)
-│   │   ├── routes/       (auth, github, analytics, ai, export)
-│   │   ├── controllers/  (request handlers)
-│   │   ├── services/     (business logic)
-│   │   ├── middleware/   (auth, validation, error handling)
-│   │   ├── validators/   (express-validator rules)
-│   │   └── utils/        (helpers, token, encryption)
-│   ├── __tests__/        (Jest tests)
+│   │   ├── config/       # db, logger, Gemini, GitHub settings
+│   │   ├── controllers/  # Express request handlers
+│   │   ├── middleware/   # auth, validation, error handling
+│   │   ├── models/       # User, Repository, Commit, PR, Issue, Insight
+│   │   ├── routes/       # api endpoints: auth, github, analytics, ai, export
+│   │   ├── services/     # business logic and integrations
+│   │   ├── utils/        # token helper, prompt builder, response helper
+│   │   └── validators/   # request validation rules
+│   ├── __tests__/        # backend Jest tests
 │   ├── package.json
 │   ├── Dockerfile
 │   └── .env.example
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── api/          (axios endpoints)
-│   │   ├── store/        (Zustand state)
-│   │   ├── hooks/        (custom React hooks)
-│   │   ├── pages/        (page components)
-│   │   ├── components/   (reusable components)
-│   │   └── utils/        (helpers)
-│   ├── public/           (static assets)
+│   │   ├── api/          # axios endpoint wrappers
+│   │   ├── components/   # dashboard and common UI components
+│   │   ├── hooks/        # custom React hooks
+│   │   ├── pages/        # app pages and protected routes
+│   │   ├── store/        # Zustand state management
+│   │   └── utils/        # frontend helpers
+│   ├── public/           # static assets
 │   ├── package.json
 │   ├── Dockerfile
 │   ├── tailwind.config.js
@@ -63,82 +65,58 @@ devtrackr/
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Tech Stack
 
-### Prerequisites
+- Frontend: React 18, Vite, Tailwind CSS, Recharts, Zustand
+- Backend: Node.js, Express.js, MongoDB, Mongoose
+- Auth: JWT access tokens + refresh tokens, secure cookies
+- AI: Google Gemini API
+- GitHub: OAuth, Octokit REST and GraphQL
+- PDF Export: PDFKit
+- DevOps: Docker Compose
+- Testing: Jest, Supertest, Vitest, mongodb-memory-server
 
-- Node.js 18+
-- npm 9+
-- MongoDB (or Docker)
-- Git
+## Quick Start
 
-### Local Development Setup
+### Option 1: Run with Docker Compose (Recommended)
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-link>
-   cd devtrackr
-   ```
-
-2. **Setup Backend**
-   ```bash
-   cd backend
-   cp .env.example .env
-   # Edit .env with your configuration
-   npm install
-   npm run dev
-   ```
-
-3. **Setup Frontend** (in another terminal)
-   ```bash
-   cd frontend
-   cp .env.example .env
-   # Edit .env and supply your VITE_API_BASE_URL and VITE_GITHUB_CLIENT_ID
-   npm install
-   
-   # Run local dev server
-   npm run dev
-   
-   # Run frontend unit tests (Vitest)
-   npm test
-   
-   # Build production bundle
-   npm run build
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
-   - Backend Health: http://localhost:5000/api/health
-
-### Docker Setup
-
-1. **Create .env files**
-   ```bash
-   cp backend/.env.example backend/.env
-   cp frontend/.env.example frontend/.env
-   ```
-
-2. **Edit .env files** with your API keys
-
-3. **Start all services**
-   ```bash
-   docker compose up --build
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
-
-### Production Docker Setup
+From devtrackr/:
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build
+git clone https://github.com/Pravinchavan321/DevTrackr.git
+cd DevTrackr/devtrackr
+docker compose up --build
 ```
 
-## ⚙️ Environment Variables
+Open the app at:
+- http://localhost:5173
+- Backend API: http://localhost:5000/api
 
-### Backend (`backend/.env`)
+### Option 2: Run Services Individually
+
+#### Backend
+
+```bash
+cd devtrackr/backend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+#### Frontend
+
+```bash
+cd devtrackr/frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Then open the UI at http://localhost:5173.
+
+## Environment Variables
+
+### Backend .env
 
 ```env
 PORT=5000
@@ -151,343 +129,58 @@ GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 GITHUB_REDIRECT_URI=http://localhost:5000/api/github/callback
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 ENCRYPTION_SECRET=your_32_char_encryption_secret_here
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
 ```
 
-### Frontend (`frontend/.env`)
+### Frontend .env
 
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_GITHUB_CLIENT_ID=your_github_client_id
 ```
 
-## 🏗️ Frontend Architecture & Integration
+## What to Do to Complete & Verify
 
-### 🔐 Auth Flow & State Management
-- **Access Tokens**: Stored purely in-memory within the Zustand `authStore` to prevent XSS-based theft.
-- **Refresh Tokens**: Stored inside secure, `httpOnly`, `sameSite: lax` cookies in the browser. The frontend never accesses or stores the refresh token in JavaScript state, `localStorage`, or `sessionStorage`.
-- **Axios Interceptor**: Automatically attaches the `Authorization: Bearer <accessToken>` header to outgoing API requests. When a request fails with a `401 Unauthorized` status (expired access token), the response interceptor automatically handles silent token refresh:
-  1. It places subsequent requests into a queue.
-  2. It calls `POST /api/auth/refresh` exactly once to request a new access token.
-  3. If refresh succeeds, it updates the `accessToken` in the Zustand store and retries all queued requests.
-  4. If refresh fails, it clears user credentials from the Zustand store and redirects the user to the `/login` route.
+1. Create .env files in backend/ and frontend/ from the .env.example files.
+2. Add your GitHub OAuth credentials and Google Gemini API key.
+3. Run docker compose up --build from devtrackr/.
+4. Visit http://localhost:5173 and sign up or log in.
+5. Connect GitHub from the settings page to authorize repo access.
+6. Sync repositories and verify:
+   - dashboard charts load
+   - commit, PR, issue, and contributor pages display data
+   - AI Insights page generates summaries
+   - PDF report export works
+7. Confirm backend health with http://localhost:5000/api/health.
+8. Run tests:
+   - Backend: cd backend && npm test
+   - Frontend: cd frontend && npm test
 
-### 🔌 GitHub Connection Flow (JSON-Mode)
-- Rather than passing access tokens in URL redirects or storing credentials insecurely, DevTrackr uses a hardened, state-protected JSON OAuth redirect.
-- When the user clicks "Connect GitHub" in the settings, the frontend calls `GET /api/github/connect?json=true` via our Axios instance (sending the Bearer token securely in the header).
-- The backend sets the `github_oauth_state` HTTP-only state cookie and returns a JSON response containing the GitHub OAuth redirect URL:
-  ```json
-  {
-    "success": true,
-    "data": {
-      "url": "https://github.com/login/oauth/authorize?..."
-    },
-    "message": "GitHub OAuth URL generated successfully"
-  }
-  ```
-- The frontend then navigates using `window.location.href = response.data.data.url`. Once authorized, GitHub redirects the user back to the backend callback, which securely connects the account and redirects the user back to the frontend `/settings?github=connected` page.
+## How the App Works
 
-### 🗺️ Frontend Routes & Pages
-- **Public Routes**: `/` (Landing Page), `/login`, `/register`.
-- **Protected Routes** (guarded by `PrivateRoute` and rendered inside the responsive `AppLayout` shell with a global `RepoSelector`):
-  - `/dashboard` — Main overview hub displaying high-level velocity metrics (Total Commits, PR Merge Rate, Average Merge Time, Open Issues), interactive charts (Commit Count preview, additions/deletions activity), and a real-time `ActivityFeed` of recent commits.
-  - `/commits` — Detailed commit trends with group-by toggles (Daily/Weekly), `CommitBarChart` + `CommitLineChart` integration, and a comprehensive paginated commits table displaying authors, SHAs, change stats (additions/deletions), and files changed.
-  - `/pullrequests` — PR lifecycle analysis incorporating a `PRStatusPieChart` (Open vs Merged vs Closed status distributions), and a paginated PR list with creation/merge times and state badges.
-  - `/issues` — Issue tracking view featuring an interactive `IssueHeatmap` showing activity frequency, open/closed summary cards, and a paginated issues list.
-  - `/contributors` — Team collaboration metrics containing a `ContributorRadarChart` summarizing top 5 contributor activity levels (commits, additions, deletions, files changed) alongside detailed contributor cards with avatars and last commit timestamps.
-  - `/insights` — AI-powered developer insights board. Connects to Google Gemini API endpoints via our backend, allowing users to:
-    1. **Generate Sprint Summaries** — Renders executive summaries, sprint health scores, team velocities, highlights lists, and concerns lists. Includes date inputs to select sprint window scoping.
-    2. **Detect Delivery Bottlenecks** — Displays pipeline risk banners, strategic priority recommendation cards, and detailed severity-level (High/Medium/Low) bottleneck alerts.
-    3. **Analyze Contributor Health** — Highlights team health score meters, active contributors count, inactive contributor alerts, bus factor risk highlights, and team health diagnostics.
-    4. **Formulate Task Recommendations** — Renders immediate team critical path next-best-action callouts, and numbered prioritized action cards complete with severity badges.
-    5. **Retain 24h Cached Insights** — Pulls cached insights on initial load and allows on-demand individual section regeneration with `force=true` query parameters.
-    6. **Export PDF Reports** — Integrates a page-header download action streaming a generated high-fidelity PDFKit report with complete visual layouts and page numbering directly to local storage.
-  - `/settings` — Profile settings with the interactive GitHub connect card.
+1. User signs up / logs in through the frontend.
+2. The backend issues JWT access tokens and stores refresh tokens in secure cookies.
+3. The user connects GitHub via OAuth.
+4. The backend syncs repository data from GitHub into MongoDB.
+5. The dashboard consumes backend metrics and renders charts, tables, and summaries.
+6. The AI module calls Google Gemini to create sprint insights, bottleneck detection, and contributor health analysis.
+7. The PDF export endpoint generates a downloadable report based on current analytics.
 
-### 📊 Analytics & Recharts Chart Suite
-DevTrackr implements custom high-fidelity responsive charts powered by **Recharts** styled in a dark-mode SaaS Tailwind theme:
-- **`CommitBarChart`**: Displays daily or weekly commit frequencies alongside additions/deletions tooltips.
-- **`CommitLineChart`**: Renders clear visual trend lines showing historical commit velocity.
-- **`PRStatusPieChart`**: Highlights pull request lifecycle distribution with custom HSL-colored segments.
-- **`ContributorRadarChart`**: Provides a radar/spider diagram assessing the top 5 contributors across commits, additions, and file changes.
-- **`VelocityAreaChart`**: Shows smooth HSL gradients representing team engineering additions/deletions and commit velocity.
-- **`IssueHeatmap`**: Tracks active issue volume trends using a custom visual layout.
+## Useful Links
 
-All dashboard pages and chart components are designed with:
-1. **Repository Guarding**: Automatic display of the `EmptyState` component when no repository is active or selected.
-2. **Robust Loading Skeletons**: Beautiful SVG loading skeletons for all charts and pages to prevent visual jumps.
-3. **Graceful Error Handling**: Individual error states per page/chart with interactive retry buttons to fetch data again.
-4. **Resilient Mocking**: Built-in mocks for `ResizeObserver` and fixed width/height container overrides to guarantee 100% test stability in the Vitest JSDOM environment.
+- Repo: https://github.com/Pravinchavan321/DevTrackr
+- UI after startup: http://localhost:5173
+- Backend API after startup: http://localhost:5000/api
 
-### 🪝 Centralized `useAnalytics` Hook
-A highly reusable react custom hook (`frontend/src/hooks/useAnalytics.js`) encapsulating standard caching, pagination parameters, load states, and error handling for all backend endpoints:
-- `fetchVelocity(repoId)`
-- `fetchCommitChart(repoId, params)`
-- `fetchCommits(repoId, params)`
-- `fetchContributors(repoId)`
-- `fetchPullRequests(repoId, params)`
-- `fetchIssues(repoId, params)`
+## Why This README Works
 
-## 🔐 Setting Up External Services
+- Clear entry points for Docker and local development
+- Exact URLs to access the UI and backend
+- Explanation of project flow and key features
+- Completion checklist for verification and testing
+- Friendly, polished presentation for GitHub visitors
 
-### 1. GitHub OAuth App
-
-1. Go to GitHub Developer Settings (https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the fields:
-   - **Application name**: DevTrackr
-   - **Homepage URL**: `http://localhost:5173`
-   - **Authorization callback URL**: `http://localhost:5000/api/github/callback`
-4. Click "Register application"
-5. Copy the generated **Client ID** into your backend `.env` as `GITHUB_CLIENT_ID`
-6. Generate a new client secret, copy it, and paste it into your backend `.env` as `GITHUB_CLIENT_SECRET`
-7. Ensure `GITHUB_REDIRECT_URI=http://localhost:5000/api/github/callback` is set in your backend `.env`
-8. Ensure `FRONTEND_URL=http://localhost:5173` is set in your backend `.env`
-9. Restart the backend server after making these changes to `.env`
-
-### 2. Google Gemini API
-
-1. Go to https://makersuite.google.com/app/apikey
-2. Create a new API key
-3. Copy the key → add to `backend/.env` as `GEMINI_API_KEY`
-
-### 3. MongoDB
-
-**Option A: Docker** (Included in docker-compose.yml)
-```bash
-docker compose up mongo
-```
-
-**Option B: Local MongoDB**
-```bash
-mongod --port 27017
-```
-
-**Option C: MongoDB Atlas** (Cloud)
-1. Create account at https://www.mongodb.com/cloud/atlas
-2. Create a cluster
-3. Get connection string → update `MONGO_URI` in `.env`
-
-## 🧪 Testing
-
-### Backend Tests
-
-```bash
-cd backend
-
-# Run all tests
-npm test
-
-# Watch mode
-npm test:watch
-
-# Coverage report
-npm test:coverage
-```
-
-### Test Files
-
-- `backend/__tests__/auth.test.js` — Authentication endpoints
-- `backend/__tests__/github.test.js` — GitHub OAuth (Session 2)
-- `backend/__tests__/analytics.test.js` — Analytics endpoints (Session 4)
-- `backend/__tests__/ai.test.js` — AI insights (Session 5)
-- `backend/__tests__/export.test.js` — PDF export (Session 6)
-
-## 📚 API Routes
-
-### Authentication
-- `POST /api/auth/register` — Create new account
-- `POST /api/auth/login` — Login user
-- `POST /api/auth/refresh` — Refresh access token
-- `POST /api/auth/logout` — Logout user
-- `GET /api/auth/me` — Get current user (protected)
-
-### GitHub (Session 2+)
-- `GET /api/github/connect` — Start OAuth flow
-- `GET /api/github/callback` — OAuth callback
-- `GET /api/github/status` — Check GitHub connection
-- `DELETE /api/github/disconnect` — Disconnect GitHub
-- `GET /api/github/repos` — List user's repos
-- `POST /api/github/repos/:repoFullName/sync` — Sync repo data (incremental)
-  - **Parameters**: `:repoFullName` (URL-encoded string representing `owner/repo`, e.g. `facebook%2Freact`)
-  - **Headers**: `Authorization: Bearer <JWT_ACCESS_TOKEN>`
-  - **Success Response** (200 OK):
-    ```json
-    {
-      "success": true,
-      "message": "Repository synced successfully",
-      "data": {
-        "repository": {
-          "id": "60d0fe4f5311236168a10aa4",
-          "githubRepoId": 10270250,
-          "name": "react",
-          "fullName": "facebook/react",
-          "lastSyncedAt": "2026-05-22T08:00:00.000Z"
-        },
-        "summary": {
-          "commitsSynced": 30,
-          "pullRequestsSynced": 30,
-          "issuesSynced": 15
-        },
-        "warning": null
-      }
-    }
-    ```
-
-
-### Analytics (Session 4+)
-All analytics routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
-- **GET /api/analytics/repos/:repoId/commits** — List paginated commits
-  - **Query Parameters**: `page` (default 1), `limit` (default 10, max 100)
-- **GET /api/analytics/repos/:repoId/commits/chart** — Commits chart data grouped by day or week
-  - **Query Parameters**: `groupBy` (`day` or `week`, default `day`)
-- **GET /api/analytics/repos/:repoId/contributors** — Contributor statistics aggregated from commits
-- **GET /api/analytics/repos/:repoId/pullrequests** — PR analytics and merge times
-  - **Query Parameters**: `page` (default 1), `limit` (default 10), `state` (`open`, `closed`, `all`, default `all`)
-- **GET /api/analytics/repos/:repoId/issues** — Issue analytics and open/closed summary
-  - **Query Parameters**: `page` (default 1), `limit` (default 10), `state` (`open`, `closed`, `all`, default `all`)
-- **GET /api/analytics/repos/:repoId/velocity** — High-level engineering velocity metrics
-
-#### Access Control Rules
-- **Invalid repoId format**: Returns `400 Bad Request`
-- **Repository not found**: Returns `404 Not Found`
-- **Repository belongs to another user**: Returns `403 Forbidden`
-
-### AI Insights (Session 5+)
-All AI routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
-- **POST /api/ai/repos/:repoId/summarize** — Generate or fetch cached 24-hour sprint summary insight
-  - **Query Parameters**: `force` (`true` to bypass cache and regenerate, default `false`)
-  - **Request Body**: `{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }` (optional date ranges, defaults to last 30 days)
-- **POST /api/ai/repos/:repoId/bottlenecks** — Generate or fetch cached 24-hour bottleneck detection insight
-  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
-- **POST /api/ai/repos/:repoId/contributors** — Generate or fetch cached 24-hour contributor team health analysis
-  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
-- **POST /api/ai/repos/:repoId/recommendations** — Generate or fetch cached 24-hour task recommendations and next best action
-  - **Query Parameters**: `force` (`true` to bypass cache, default `false`)
-- **GET /api/ai/repos/:repoId/insights** — Retrieve list of all currently active cached insights for the repository
-
-#### Access Control & Setup Rules
-- **Authentication**: All routes protected by `authenticateToken` JWT validation.
-- **Invalid repoId format**: Returns `400 Bad Request`
-- **Repository not found**: Returns `404 Not Found`
-- **Repository belongs to another user**: Returns `403 Forbidden`
-- **Cache Control**: Insights are cached in MongoDB with a 24-hour expiration (`expiresAt` TTL index). The `force=true` query parameter forces immediate regeneration.
-- **Config**: Requires `GEMINI_API_KEY` and `GEMINI_MODEL=gemini-1.5-flash` configured in the backend environment.
-
-### Export (Session 6+)
-All export routes require a Bearer access token. The `:repoId` must belong to the authenticated user.
-- **GET /api/export/repos/:repoId/pdf** — Download a PDF report for the repository
-  - **Headers**: `Authorization: Bearer <JWT_ACCESS_TOKEN>`
-  - **Parameters**: `:repoId` (MongoDB ObjectId of the synced repository)
-  - **Success Response** (200 OK):
-    - `Content-Type: application/pdf`
-    - `Content-Disposition: attachment; filename="devtrackr-report-<repo-name>.pdf"`
-    - Body is a binary PDF stream — browser/client should download the response as a file
-  - **PDF includes**: Repository stats, top contributors table, recent commits, PRs, issues, and cached AI insights (sprint summary, bottlenecks, recommendations) if available
-  - **Note**: Does not regenerate AI insights. Only reads cached insights from MongoDB.
-
-#### Access Control Rules
-- **Missing/invalid auth token**: Returns `401 Unauthorized`
-- **Invalid repoId format**: Returns `400 Bad Request`
-- **Repository not found**: Returns `404 Not Found`
-- **Repository belongs to another user**: Returns `403 Forbidden`
-
-## 🐛 Troubleshooting & Common Errors
-
-### 1. MongoDB Connection Failed
-* **Error symptoms**: Backend prints `MongoDB connection error: ...` or timed out messages on boot, or REST queries fail with `500 Server Error`.
-* **Solutions**:
-  - **Docker Setup**: Ensure the MongoDB service `mongo` is up and healthy. Run `docker compose ps` to inspect. Check `MONGO_URI` in `backend/.env`. Inside the Docker network, it must be `mongodb://mongo:27017/devtrackr` (using the service name `mongo`, not `localhost`).
-  - **Local Setup**: Ensure local MongoDB instance is started. On Windows, verify "MongoDB Server" is running in the Services app, or launch manually via `mongod --port 27017`. Set `MONGO_URI=mongodb://localhost:27017/devtrackr`.
-  - **Atlas Cloud Setup**: Ensure your IP address is whitelisted in your MongoDB Atlas network access control panel. Use the correct connection string: `MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/devtrackr?retryWrites=true&w=majority`.
-
-### 2. GitHub OAuth Callback URL Mismatch
-* **Error symptoms**: Redirecting to GitHub shows a standard error: `redirect_uri_mismatch`.
-* **Solutions**:
-  - Verify that the Authorization Callback URL in your GitHub Developer settings matches your `GITHUB_REDIRECT_URI` environment variable exactly.
-  - For local development, this must be `http://localhost:5000/api/github/callback`.
-  - Ensure that the frontend uses the exact same `VITE_GITHUB_CLIENT_ID` matching the `GITHUB_CLIENT_ID` in your backend `.env` file.
-
-### 3. Missing Gemini API Key
-* **Error symptoms**: Requesting AI Insights hangs or returns `500 Internal Server Error` with `Gemini API key is required` or `API key not valid` logged in the console.
-* **Solutions**:
-  - Obtain a valid free-tier or pay-as-you-go API key from Google AI Studio.
-  - Ensure `GEMINI_API_KEY` is fully defined in your `backend/.env` file.
-  - Ensure `GEMINI_MODEL=gemini-1.5-flash` is set for optimal processing speed and compatibility.
-
-### 4. CORS & Credentials Issue
-* **Error symptoms**: Axios requests fail in the browser with `Access-Control-Allow-Origin` errors or `Credentials flag not matched`.
-* **Solutions**:
-  - Ensure `FRONTEND_URL` is set to `http://localhost:5173` (or your production domain) in `backend/.env`.
-  - Ensure the backend configuration in `app.js` enables `cors({ origin: process.env.FRONTEND_URL, credentials: true })`.
-  - Frontend Axios requests must include `withCredentials: true` (handled automatically by the centralized `api/axios.js` client).
-
-### 5. Refresh Token / httpOnly Cookie Issue
-* **Error symptoms**: Silent token refreshes fail continually or users are logged out unexpectedly after 15 minutes (or when reloading the browser).
-* **Solutions**:
-  - Verify that `cookie-parser` middleware is mounted properly in the Express app.
-  - Ensure that cookies are not blocked in your browser's security/privacy preferences.
-  - For local development, the refresh cookie is issued with `secure: false` (since it is running on HTTP). In production, configure `secure: true` and ensure HTTPS traffic.
-
-### 6. Docker Environment File Missing
-* **Error symptoms**: Docker Compose fails to spin up the backend or frontend containers, printing errors like `env_file backend/.env not found`.
-* **Solutions**:
-  - Docker Compose relies on physical `.env` files existing in the `backend/` and `frontend/` folders.
-  - Before running `docker compose up --build`, copy the `.env.example` files to `.env` in both folders and fill in your values.
-  - **Important**: Do not commit these `.env` files to git.
-
----
-
-## 📝 Development Sessions
-
-This project is successfully built across 10 structured sessions:
-
-1. ✅ **Session 1** — Docker + Express + Auth
-2. ✅ **Session 2** — GitHub OAuth + Token Storage + Repo Listing
-3. ✅ **Session 3** — GitHub Data Sync Engine
-4. ✅ **Session 4** — Analytics API Endpoints
-5. ✅ **Session 5** — Gemini AI Integration
-6. ✅ **Session 6** — PDF Export Backend
-7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout
-8. ✅ **Session 8** — Recharts Dashboard + Charts
-9. ✅ **Session 9** — AI Insight Cards UI
-10. ✅ **Session 10** — Polish, Error Handling, QA, & Production Readiness (FINAL)
-
----
-
-## 📦 Dependencies
-
-### Backend
-- express, mongoose, bcryptjs, jsonwebtoken
-- @octokit/rest, @octokit/graphql
-- @google/generative-ai
-- express-validator, winston, helmet, morgan, cors
-- pdfkit, crypto-js, dotenv
-- jest, supertest (dev), mongodb-memory-server (dev)
-
-### Frontend
-- react, react-dom, react-router-dom
-- axios, recharts, zustand
-- @heroicons/react, react-hot-toast
-- tailwindcss, vite (dev)
-- vitest, @testing-library/react (dev), jsdom (dev)
-
-## 📄 License
-
-MIT
-
-## 👤 Author
-
-DevTrackr Team
-
-## 🤝 Contributing
-
-This is a development project. For bug reports or feature requests, please open an issue.
-
----
-
-**Last Updated**: Session 10 Complete (100% Production Ready)
-
+Built with developer productivity in mind — from GitHub insights to AI recommendations, DevTrackr is designed to help teams move faster and ship smarter.

@@ -343,6 +343,11 @@
 - [x] 404 catch-all route in Express
 - [x] Refresh token rotation implemented
 - [x] Final end-to-end test: signup → connect GitHub → sync → view charts → generate AI → export PDF
+- [x] Fix Repository State Loss on Page Refresh:
+  - Repository selection now persists across refresh using user-scoped localStorage (`devtrackr_selected_repo_name_${activeUserId}`).
+  - `GET /api/github/repos` now returns MongoDB `_id` for previously synced repositories to maintain a cohesive data flow.
+  - Analytics and AI features no longer require a manual re-sync action after a page refresh.
+  - Beautiful "Sync Required" empty states are shown with a Sync Button on all dashboard and analytics tabs for unsynced repos to prevent broken API calls.
 
 **Known issues / carry-forward:**
 ```

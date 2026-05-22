@@ -114,7 +114,15 @@ class AuthService {
 
       logger.info('Token refreshed successfully', { userId: user._id });
 
-      return { accessToken };
+      return {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          githubConnected: user.githubConnected
+        },
+        accessToken
+      };
     } catch (error) {
       logger.debug('Token refresh error', { error: error.message });
       throw error;
