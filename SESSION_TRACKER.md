@@ -235,37 +235,35 @@
 ---
 
 ### SESSION 7 — React Frontend (Auth Pages + Dashboard Layout)
-**Status:** `[ ] Not Started`  
+**Status:** `[x] Complete`  
 **Depends on:** Session 6 complete
 
 **Goal:** Full React app scaffold, auth flow, dashboard shell
 
 **What was built:**
-- [ ] Vite + React + Tailwind setup
-- [ ] `src/api/axios.js` — Axios instance with interceptors (auto attach token, silent refresh on 401)
-- [ ] All API files: `auth.api.js`, `github.api.js`, `analytics.api.js`, `ai.api.js`
-- [ ] `authStore.js` — Zustand store (user, accessToken, isAuthenticated)
-- [ ] `repoStore.js` — Zustand store (repos, selectedRepo)
-- [ ] `useAuth.js` hook (login, logout, register, loadUser)
-- [ ] `PrivateRoute.jsx` — redirects to /login if not authenticated
-- [ ] `AppLayout.jsx` — Sidebar + Topbar shell
-- [ ] `Sidebar.jsx` — nav links (Dashboard, Commits, PRs, Issues, Insights, Contributors, Settings)
-- [ ] `Topbar.jsx` — user avatar, repo selector, notifications
-- [ ] `LandingPage.jsx` — public hero page with login/register CTA
-- [ ] `LoginPage.jsx` + `LoginForm.jsx`
-- [ ] `RegisterPage.jsx` + `RegisterForm.jsx`
-- [ ] `DashboardPage.jsx` — repo selector + 4 StatsCards (commits, PRs, issues, contributors)
-- [ ] `SettingsPage.jsx` — GitHub connect/disconnect button
-- [ ] `RepoSelector.jsx` — dropdown to switch active repo
-- [ ] `Button.jsx`, `Input.jsx`, `Badge.jsx`, `SkeletonLoader.jsx`, `EmptyState.jsx`
-- [ ] `ToastNotifications.jsx` (react-hot-toast configured)
-- [ ] React Router routes configured in `App.jsx`
-- [ ] Dark mode default in `tailwind.config.js`
+- [x] Vite + React + Tailwind setup
+- [x] `src/api/axios.js` — Axios instance with interceptors (auto attach token, silent refresh on 401)
+- [x] All API files: `auth.api.js`, `github.api.js`, `analytics.api.js`, `ai.api.js`
+- [x] `authStore.js` — Zustand store (user, accessToken, isAuthenticated)
+- [x] `repoStore.js` — Zustand store (repos, selectedRepo)
+- [x] `useAuth.js` hook (login, logout, register, loadUser)
+- [x] `PrivateRoute.jsx` — redirects to /login if not authenticated
+- [x] `AppLayout.jsx` — Sidebar + Topbar shell
+- [x] `Sidebar.jsx` — nav links (Dashboard, Commits, PRs, Issues, Insights, Contributors, Settings)
+- [x] `Topbar.jsx` — user avatar, repo selector, notifications
+- [x] `LandingPage.jsx` — public hero page with login/register CTA
+- [x] `LoginPage.jsx` + `LoginForm.jsx`
+- [x] `RegisterPage.jsx` + `RegisterForm.jsx`
+- [x] `DashboardPage.jsx` — repo selector + 4 StatsCards (commits, PRs, issues, contributors)
+- [x] `SettingsPage.jsx` — GitHub connect/disconnect button
+- [x] `RepoSelector.jsx` — dropdown to switch active repo
+- [x] `Button.jsx`, `Input.jsx`, `Badge.jsx`, `SkeletonLoader.jsx`, `EmptyState.jsx`
+- [x] `ToastNotifications.jsx` (react-hot-toast configured)
+- [x] React Router routes configured in `App.jsx`
+- [x] Dark mode default in `tailwind.config.js`
 
 **Known issues / carry-forward:**
-```
-(fill this in after session completes)
-```
+- None. Ready for Session 8.
 
 ---
 
@@ -385,12 +383,12 @@ Session 3  [Sync Engine]            ██████████  10%
 Session 4  [Analytics API]          ██████████  10%
 Session 5  [Gemini AI]              ██████████  10%
 Session 6  [PDF Export]             ██████████  10%
-Session 7  [React + Auth UI]        ░░░░░░░░░░  0%
+Session 7  [React + Auth UI]        ██████████  10%
 Session 8  [Recharts Dashboard]     ░░░░░░░░░░  0%
 Session 9  [AI Insight Cards]       ░░░░░░░░░░  0%
 Session 10 [Polish + Deploy]        ░░░░░░░░░░  0%
 
-Total: 6 / 10 Sessions Complete
+Total: 7 / 10 Sessions Complete
 ```
 
 > Update progress bar manually: replace `░` with `█` as tasks complete

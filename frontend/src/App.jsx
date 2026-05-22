@@ -1,15 +1,57 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ToastNotifications from './components/common/ToastNotifications';
+
+// Layout shells
+import PrivateRoute from './components/layout/PrivateRoute';
+import AppLayout from './components/layout/AppLayout';
+
+// Public Pages
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+
+// Protected Pages
+import DashboardPage from './pages/DashboardPage';
+import SettingsPage from './pages/SettingsPage';
+
+// Lightweight placeholders
+import CommitsPage from './pages/CommitsPage';
+import PullRequestsPage from './pages/PullRequestsPage';
+import IssuesPage from './pages/IssuesPage';
+import ContributorsPage from './pages/ContributorsPage';
+import InsightsPage from './pages/InsightsPage';
+
 import './index.css';
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">DevTrackr</h1>
-        <p className="text-gray-400 mb-8">AI Developer Productivity Dashboard</p>
-        <p className="text-gray-500">Session 1 — Backend setup complete. Frontend coming in Session 6.</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      {/* Toast Alert Portal */}
+      <ToastNotifications />
+
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected Routes Inside AppLayout Shell */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/commits" element={<CommitsPage />} />
+            <Route path="/pullrequests" element={<PullRequestsPage />} />
+            <Route path="/issues" element={<IssuesPage />} />
+            <Route path="/contributors" element={<ContributorsPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+        </Route>
+
+        {/* Catch-all Fallback Redirect to Landing Page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

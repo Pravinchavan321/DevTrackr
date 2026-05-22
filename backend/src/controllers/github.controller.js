@@ -20,6 +20,11 @@ export const connect = asyncHandler(async (req, res) => {
     maxAge: 15 * 60 * 1000 // 15 minutes
   });
 
+  // If client requested JSON response (e.g. for secure Bearer auth in frontend)
+  if (req.query.json === 'true' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+    return sendSuccess(res, { url }, 'GitHub OAuth URL generated successfully');
+  }
+
   // Redirect to GitHub OAuth Page
   res.redirect(url);
 });

@@ -93,8 +93,17 @@ devtrackr/
    ```bash
    cd frontend
    cp .env.example .env
+   # Edit .env and supply your VITE_API_BASE_URL and VITE_GITHUB_CLIENT_ID
    npm install
+   
+   # Run local dev server
    npm run dev
+   
+   # Run frontend unit tests (Vitest)
+   npm test
+   
+   # Build production bundle
+   npm run build
    ```
 
 4. **Access the application**
@@ -154,6 +163,43 @@ NODE_ENV=development
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_GITHUB_CLIENT_ID=your_github_client_id
 ```
+
+## 🏗️ Frontend Architecture & Integration
+
+### 🔐 Auth Flow & State Management
+- **Access Tokens**: Stored purely in-memory within the Zustand `authStore` to prevent XSS-based theft.
+- **Refresh Tokens**: Stored inside secure, `httpOnly`, `sameSite: lax` cookies in the browser. The frontend never accesses or stores the refresh token in JavaScript state, `localStorage`, or `sessionStorage`.
+- **Axios Interceptor**: Automatically attaches the `Authorization: Bearer <accessToken>` header to outgoing API requests. When a request fails with a `401 Unauthorized` status (expired access token), the response interceptor automatically handles silent token refresh:
+  1. It places subsequent requests into a queue.
+  2. It calls `POST /api/auth/refresh` exactly once to request a new access token.
+  3. If refresh succeeds, it updates the `accessToken` in the Zustand store and retries all queued requests.
+  4. If refresh fails, it clears user credentials from the Zustand store and redirects the user to the `/login` route.
+
+### 🔌 GitHub Connection Flow (JSON-Mode)
+- Rather than passing access tokens in URL redirects or storing credentials insecurely, DevTrackr uses a hardened, state-protected JSON OAuth redirect.
+- When the user clicks "Connect GitHub" in the settings, the frontend calls `GET /api/github/connect?json=true` via our Axios instance (sending the Bearer token securely in the header).
+- The backend sets the `github_oauth_state` HTTP-only state cookie and returns a JSON response containing the GitHub OAuth redirect URL:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "url": "https://github.com/login/oauth/authorize?..."
+    },
+    "message": "GitHub OAuth URL generated successfully"
+  }
+  ```
+- The frontend then navigates using `window.location.href = response.data.data.url`. Once authorized, GitHub redirects the user back to the backend callback, which securely connects the account and redirects the user back to the frontend `/settings?github=connected` page.
+
+### 🗺️ Frontend Routes
+- **Public Routes**: `/` (Landing Page), `/login`, `/register`.
+- **Protected Routes** (rendered inside the responsive dashboard `AppLayout` shell, guarded by `PrivateRoute`):
+  - `/dashboard` — Shell containing a repository selector, stats cards, and activity feeds.
+  - `/commits` — Lightweight commits list view.
+  - `/pullrequests` — Lightweight pull requests list view.
+  - `/issues` — Lightweight issues list view.
+  - `/contributors` — Lightweight contributor analytics view.
+  - `/insights` — Lightweight AI-powered insights report view.
+  - `/settings` — Profile settings containing the interactive GitHub connect card.
 
 ## 🔐 Setting Up External Services
 
@@ -365,11 +411,11 @@ This project is built in 10 structured sessions:
 3. ✅ **Session 3** — GitHub Data Sync Engine
 4. ✅ **Session 4** — Analytics API Endpoints
 5. ✅ **Session 5** — Gemini AI Integration
-6. ✅ **Session 6** — PDF Export Backend (CURRENT)
-7. **Session 7** — React Frontend Auth Pages + Dashboard Layout
+6. ✅ **Session 6** — PDF Export Backend
+7. ✅ **Session 7** — React Frontend Auth Pages + Dashboard Layout (CURRENT)
 8. **Session 8** — Recharts Dashboard + Charts
 9. **Session 9** — AI Insight Cards UI
-10. **Session 10** — Polish, Error Handling, Deployment Config
+10. **Session 10** Polish, Error Handling, Deployment Config
 
 ## 📦 Dependencies
 
@@ -386,7 +432,7 @@ This project is built in 10 structured sessions:
 - axios, recharts, zustand
 - @heroicons/react, react-hot-toast
 - tailwindcss, vite (dev)
-- vitest, @testing-library/react (dev)
+- vitest, @testing-library/react (dev), jsdom (dev)
 
 ## 📄 License
 
@@ -402,4 +448,4 @@ This is a development project. For bug reports or feature requests, please open 
 
 ---
 
-**Last Updated**: Session 6 Complete
+**Last Updated**: Session 7 Complete
