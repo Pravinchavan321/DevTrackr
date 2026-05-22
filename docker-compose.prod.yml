@@ -21,7 +21,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      network: host
     container_name: devtrackr_backend_prod
     depends_on:
       mongo:
@@ -39,7 +38,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-      network: host
     container_name: devtrackr_frontend_prod
     env_file:
       - frontend/.env

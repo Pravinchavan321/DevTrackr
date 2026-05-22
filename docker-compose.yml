@@ -10,9 +10,9 @@ services:
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/devtrackr
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok", "localhost:27017/devtrackr"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
     networks:
       - devtrackr_network
@@ -21,7 +21,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      network: host
     container_name: devtrackr_backend
     depends_on:
       mongo:
@@ -41,7 +40,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      network: host
     container_name: devtrackr_frontend
     env_file:
       - frontend/.env

@@ -2,11 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy all files including node_modules
+# Install dependencies inside the Linux container so host node_modules
+# never leak into the image.
+COPY package.json package-lock.json ./
+RUN npm ci
+
 COPY . .
 
-# Expose port
 EXPOSE 5000
 
-# Run the app
 CMD ["npm", "start"]

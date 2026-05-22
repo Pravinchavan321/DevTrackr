@@ -1,12 +1,14 @@
-FROM node:20-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /app
 
-# Copy all files including node_modules
+# Install dependencies inside the container to ensure native modules
+# are built for the container environment.
+COPY package.json package-lock.json ./
+RUN npm ci
+
 COPY . .
 
-# Expose port
 EXPOSE 5173
 
-# Run the development server
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
