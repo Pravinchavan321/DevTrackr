@@ -1,7 +1,7 @@
 
 services:
   mongo:
-    image: mongo:6.0-alpine
+    image: mongo:6
     container_name: devtrackr_mongo
     environment:
       MONGO_INITDB_DATABASE: devtrackr
@@ -21,6 +21,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
     container_name: devtrackr_backend
     depends_on:
       mongo:
@@ -40,6 +41,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      network: host
     container_name: devtrackr_frontend
     env_file:
       - frontend/.env
