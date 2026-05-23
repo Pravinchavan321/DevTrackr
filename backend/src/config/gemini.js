@@ -1,30 +1,55 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import logger from './logger.js';
 
-let geminiClient = null;
+let geminiClients = null;
+
+const getGeminiApiKeys = () => {
+  const configuredKeys = [
+    ...(process.env.GEMINI_API_KEYS || '').split(','),
+    process.env.GEMINI_API_KEY || ''
+  ];
+
+  const seen = new Set();
+  return configuredKeys
+    .map((key) => key.trim())
+    .filter(Boolean)
+    .filter((key) => {
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
 
 const initGemini = () => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      logger.warn('GEMINI_API_KEY not set - AI features will be disabled');
+    const apiKeys = getGeminiApiKeys();
+
+    if (!apiKeys.length) {
+      geminiClients = [];
+      logger.warn('GEMINI_API_KEY or GEMINI_API_KEYS not set - AI features will be disabled');
       return null;
     }
 
-    geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    geminiClients = apiKeys.map((apiKey) => new GoogleGenerativeAI(apiKey));
     const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    logger.info(`Gemini AI client initialized with model: ${modelName}`);
-    return geminiClient;
+    logger.info(`Gemini AI clients initialized with model: ${modelName} (${geminiClients.length} key(s) configured)`);
+    return geminiClients[0];
   } catch (error) {
+    geminiClients = [];
     logger.error('Failed to initialize Gemini', { error: error.message });
     return null;
   }
 };
 
-const getGeminiClient = () => {
-  if (!geminiClient) {
-    return initGemini();
+const getGeminiClients = () => {
+  if (!geminiClients) {
+    initGemini();
   }
-  return geminiClient;
+  return geminiClients || [];
 };
 
-export { initGemini, getGeminiClient };
+const getGeminiClient = () => {
+  return getGeminiClients()[0] || null;
+};
+
+export { initGemini, getGeminiApiKeys, getGeminiClient, getGeminiClients };

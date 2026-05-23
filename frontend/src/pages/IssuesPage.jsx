@@ -133,7 +133,7 @@ export default function IssuesPage() {
               onClick={() => setStateFilter(filterVal)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide capitalize transition-all ${
                 stateFilter === filterVal
-                  ? 'bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-violet-600 text-white shadow-sm ring-1 ring-violet-500/50'
                   : 'text-gray-400 hover:text-gray-250'
               }`}
             >
@@ -219,7 +219,7 @@ export default function IssuesPage() {
                               </Badge>
                             </td>
                             <td className="py-3.5 px-5 font-semibold text-indigo-400">
-                              {issue.author || 'Unknown'}
+                              {issue.author?.login || 'Unknown'}
                             </td>
                             <td className="py-3.5 px-5 text-gray-400">
                               {formatDate(issue.githubCreatedAt || issue.createdAt)}

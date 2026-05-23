@@ -193,31 +193,33 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Card */}
-      <div className="bg-gradient-to-r from-indigo-900/40 via-indigo-950/20 to-transparent border border-indigo-500/15 rounded-2xl p-6 relative overflow-hidden">
+      <div className="bg-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">
               Repository Dashboard: {selectedRepo.name}
             </h1>
-            <p className="text-sm text-indigo-200/70 max-w-xl">
+            <p className="text-sm text-gray-400 max-w-xl">
               Analyzing productivity metrics, commit intervals, and contributor profiles.
             </p>
           </div>
           
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-md">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-md">
             <CpuChipIcon className="h-6 w-6" />
           </div>
         </div>
       </div>
 
       {/* 8 Analytics Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="Total Commits"
           value={velocity?.totalCommits ?? 0}
           icon={CommandLineIcon}
           loading={loading}
           description="Total commits synced"
+          style={{ animationDelay: '0ms' }}
+          color="violet"
         />
         <StatsCard
           label="Total PRs"
@@ -225,6 +227,8 @@ export default function DashboardPage() {
           icon={DocumentTextIcon}
           loading={loading}
           description="Pull requests synced"
+          style={{ animationDelay: '100ms' }}
+          color="cyan"
         />
         <StatsCard
           label="Merged PRs"
@@ -232,6 +236,8 @@ export default function DashboardPage() {
           icon={CheckIcon}
           loading={loading}
           description="Successfully merged"
+          style={{ animationDelay: '200ms' }}
+          color="emerald"
         />
         <StatsCard
           label="Open Issues"
@@ -239,6 +245,8 @@ export default function DashboardPage() {
           icon={ExclamationCircleIcon}
           loading={loading}
           description="Currently active"
+          style={{ animationDelay: '300ms' }}
+          color="amber"
         />
         <StatsCard
           label="Closed Issues"
@@ -246,6 +254,8 @@ export default function DashboardPage() {
           icon={CheckCircleIcon}
           loading={loading}
           description="Resolved / completed"
+          style={{ animationDelay: '400ms' }}
+          color="cyan"
         />
         <StatsCard
           label="Merge Rate"
@@ -253,6 +263,8 @@ export default function DashboardPage() {
           icon={ArrowsRightLeftIcon}
           loading={loading}
           description="Ratio of merged PRs"
+          style={{ animationDelay: '500ms' }}
+          color="emerald"
         />
         <StatsCard
           label="Avg Merge Time"
@@ -260,6 +272,8 @@ export default function DashboardPage() {
           icon={BoltIcon}
           loading={loading}
           description="Average pull request lifespan"
+          style={{ animationDelay: '600ms' }}
+          color="amber"
         />
         <StatsCard
           label="Commits per Day"
@@ -267,17 +281,35 @@ export default function DashboardPage() {
           icon={CalendarIcon}
           loading={loading}
           description="Velocity daily rate"
+          style={{ animationDelay: '700ms' }}
+          color="violet"
         />
+      </div>
+
+      {/* 3D Section Divider */}
+      <div className="relative flex items-center justify-center py-4">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent"></div>
+        <div className="absolute w-2 h-2 rounded-full bg-violet-500"></div>
       </div>
 
       {/* Two Column Visual Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ErrorBoundary>
-          <CommitBarChart data={commitChart} title="Daily Commit Frequencies" />
-        </ErrorBoundary>
-        <ErrorBoundary>
-          <VelocityAreaChart data={commitChart} title="Engineering Velocity Frequencies" />
-        </ErrorBoundary>
+        <div className="overflow-hidden rounded-2xl h-full">
+          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-700/50 p-6 h-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2),0_4px_12px_rgba(0,0,0,0.4)] hover:border-violet-500/40">
+            <h2 className="text-gray-200 font-semibold border-l-4 border-violet-500 pl-3 mb-4">Daily Commit Frequencies</h2>
+            <ErrorBoundary>
+              <CommitBarChart data={commitChart} />
+            </ErrorBoundary>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-2xl h-full">
+          <div className="bg-gray-900/60 backdrop-blur-md border border-gray-700/50 p-6 h-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2),0_4px_12px_rgba(0,0,0,0.4)] hover:border-violet-500/40">
+            <h2 className="text-gray-200 font-semibold border-l-4 border-violet-500 pl-3 mb-4">Engineering Velocity Frequencies</h2>
+            <ErrorBoundary>
+              <VelocityAreaChart data={commitChart} />
+            </ErrorBoundary>
+          </div>
+        </div>
       </div>
 
       {/* Activity Timeline Widget */}

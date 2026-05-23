@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import useAuth from '../hooks/useAuth';
@@ -29,18 +29,26 @@ export default function SettingsPage() {
     checkConnectionStatus();
   }, [checkConnectionStatus]);
 
+  const hasShownToast = useRef(false);
+
   // Handle OAuth callback URL status alerts
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const githubParam = params.get('github');
 
     if (githubParam === 'connected') {
-      toast.success('Successfully connected your GitHub account!');
-      checkConnectionStatus();
+      if (!hasShownToast.current) {
+        hasShownToast.current = true;
+        toast.success('Successfully connected your GitHub account!');
+        checkConnectionStatus();
+      }
       // Clear query params to prevent repeating toast on reload
       navigate('/settings', { replace: true });
     } else if (githubParam === 'error') {
-      toast.error('Failed to authenticate with GitHub. Please try again.');
+      if (!hasShownToast.current) {
+        hasShownToast.current = true;
+        toast.error('Failed to authenticate with GitHub. Please try again.');
+      }
       navigate('/settings', { replace: true });
     }
   }, [location.search, navigate, checkConnectionStatus]);

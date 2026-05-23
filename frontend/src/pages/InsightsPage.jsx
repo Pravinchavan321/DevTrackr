@@ -16,6 +16,7 @@ import SyncButton from '../components/dashboard/SyncButton';
  */
 export default function InsightsPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const [focusedInsight, setFocusedInsight] = useState(null);
   const {
     loading,
     cachedInsights,
@@ -35,6 +36,17 @@ export default function InsightsPage() {
       fetchInsights(selectedRepo._id);
     }
   }, [selectedRepo?._id, fetchInsights]);
+
+  useEffect(() => {
+    if (!focusedInsight) return undefined;
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setFocusedInsight(null);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [focusedInsight]);
 
   // Handler to stream PDF reports
   const handlePdfDownload = async () => {
@@ -96,13 +108,13 @@ export default function InsightsPage() {
         <div className="space-y-1">
           <div className="flex items-center space-x-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-white">AI Developer Insights</h1>
-            <span className="inline-flex items-center rounded bg-indigo-500/10 px-2 py-0.5 text-xs font-semibold text-indigo-400 border border-indigo-500/20">
+            <span className="inline-flex items-center rounded bg-violet-500/10 px-2 py-0.5 text-xs font-semibold text-violet-400 border border-violet-500/20">
               Gemini Powered
             </span>
           </div>
           <p className="text-sm text-gray-400">
             Sprint executive summaries, systemic pipeline bottlenecks, and priority contributor analysis for{' '}
-            <strong className="text-indigo-400">{selectedRepo.fullName}</strong>.
+            <strong className="text-violet-400">{selectedRepo.fullName}</strong>.
           </p>
         </div>
         
@@ -110,9 +122,9 @@ export default function InsightsPage() {
         <button
           onClick={handlePdfDownload}
           disabled={loading || Object.values(generating).some(Boolean)}
-          className="inline-flex items-center justify-center font-medium bg-gray-850 hover:bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-4 py-2 text-sm disabled:opacity-50 disabled:bg-gray-900 transition-all duration-200 shadow-sm shrink-0"
+          className="inline-flex items-center justify-center font-medium bg-gray-850 hover:bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-lg px-4 py-2 text-sm disabled:opacity-50 disabled:bg-gray-900 transition-all duration-200 shadow-sm shrink-0"
         >
-          <svg className="h-4.5 w-4.5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-4.5 w-4.5 mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Export PDF Report
@@ -133,10 +145,25 @@ export default function InsightsPage() {
       )}
 
       {/* High-Fidelity Responsive 2-Column Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      {focusedInsight && (
+        <button
+          type="button"
+          className="insight-focus-backdrop"
+          aria-label="Close focused insight"
+          onClick={() => setFocusedInsight(null)}
+        />
+      )}
+
+      <div className={`insights-focus-grid grid grid-cols-1 xl:grid-cols-2 gap-8 ${focusedInsight ? 'is-click-focused' : ''}`}>
         
         {/* Section 1: Sprint Summary */}
         <InsightCard
+          type="sprint_summary"
+          className="insight-focus-item"
+          isFocused={focusedInsight === 'sprint_summary'}
+          isAnyFocused={Boolean(focusedInsight)}
+          onActivate={() => setFocusedInsight('sprint_summary')}
+          onClose={() => setFocusedInsight(null)}
           title="Sprint Summary"
           description="Executive summary, velocity ratings, highlights and Concerns."
           loading={loading || (generating.sprint_summary && !summaryDoc)}
@@ -160,7 +187,7 @@ export default function InsightsPage() {
                   loading={generating.sprint_summary}
                   disabled={loading}
                   onClick={() => generateSprintSummary(selectedRepo._id, {}, {})}
-                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                  className="px-3 py-1.5 text-xs bg-violet-600 hover:bg-violet-500"
                 >
                   Generate Summary
                 </GenerateInsightButton>
@@ -180,6 +207,12 @@ export default function InsightsPage() {
 
         {/* Section 2: Bottleneck Detection */}
         <InsightCard
+          type="bottleneck"
+          className="insight-focus-item"
+          isFocused={focusedInsight === 'bottleneck'}
+          isAnyFocused={Boolean(focusedInsight)}
+          onActivate={() => setFocusedInsight('bottleneck')}
+          onClose={() => setFocusedInsight(null)}
           title="Bottleneck Analysis"
           description="Workload imbalances, average PR merge times, stale deliverables."
           loading={loading || (generating.bottleneck && !bottleneckDoc)}
@@ -203,7 +236,7 @@ export default function InsightsPage() {
                   loading={generating.bottleneck}
                   disabled={loading}
                   onClick={() => generateBottlenecks(selectedRepo._id, {})}
-                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                  className="px-3 py-1.5 text-xs bg-violet-600 hover:bg-violet-500"
                 >
                   Detect Bottlenecks
                 </GenerateInsightButton>
@@ -217,6 +250,12 @@ export default function InsightsPage() {
 
         {/* Section 3: Contributor Health Analysis */}
         <InsightCard
+          type="contributor"
+          className="insight-focus-item"
+          isFocused={focusedInsight === 'contributor'}
+          isAnyFocused={Boolean(focusedInsight)}
+          onActivate={() => setFocusedInsight('contributor')}
+          onClose={() => setFocusedInsight(null)}
           title="Contributor Analysis"
           description="Collaboration score metrics, inactive handles, project dependencies."
           loading={loading || (generating.contributor_analysis && !contributorDoc)}
@@ -240,7 +279,7 @@ export default function InsightsPage() {
                   loading={generating.contributor_analysis}
                   disabled={loading}
                   onClick={() => generateContributorAnalysis(selectedRepo._id, {})}
-                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                  className="px-3 py-1.5 text-xs bg-violet-600 hover:bg-violet-500"
                 >
                   Analyze Contributor Health
                 </GenerateInsightButton>
@@ -254,6 +293,12 @@ export default function InsightsPage() {
 
         {/* Section 4: Recommendations */}
         <InsightCard
+          type="recommendations"
+          className="insight-focus-item"
+          isFocused={focusedInsight === 'recommendations'}
+          isAnyFocused={Boolean(focusedInsight)}
+          onActivate={() => setFocusedInsight('recommendations')}
+          onClose={() => setFocusedInsight(null)}
           title="Recommendations"
           description="Prioritized actionable milestones to accelerate delivery speeds."
           loading={loading || (generating.recommendations && !recommendationsDoc)}
@@ -277,7 +322,7 @@ export default function InsightsPage() {
                   loading={generating.recommendations}
                   disabled={loading}
                   onClick={() => generateRecommendations(selectedRepo._id, {})}
-                  className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500"
+                  className="px-3 py-1.5 text-xs bg-violet-600 hover:bg-violet-500"
                 >
                   Formulate Recommendations
                 </GenerateInsightButton>

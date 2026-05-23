@@ -34,7 +34,7 @@ export default function BottleneckCard({ parsedData }) {
       );
     }
     return (
-      <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide border border-gray-700">
+      <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 uppercase tracking-wide border border-emerald-500/20">
         Low Severity
       </span>
     );
@@ -72,7 +72,7 @@ export default function BottleneckCard({ parsedData }) {
       {/* Risk Level Banner & Top Recommendation Callout */}
       <div className="grid grid-cols-1 gap-4">
         {/* Risk Level Header */}
-        <div className={`flex items-center justify-between p-4 rounded-xl border ${getRiskStyles(riskLevel)}`}>
+        <div className={`ai-insight-surface flex items-center justify-between p-4 rounded-xl border ${getRiskStyles(riskLevel)}`}>
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider opacity-80">Pipeline Delivery Risk</span>
             <p className="text-sm font-bold capitalize">{riskLevel} Delivery Risk</p>
@@ -86,9 +86,9 @@ export default function BottleneckCard({ parsedData }) {
 
         {/* Top Recommendation Box */}
         {topRecommendation && (
-          <div className="bg-indigo-950/20 border border-indigo-900/60 p-4 rounded-xl space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Strategic Priority Recommendation</span>
-            <p className="text-xs text-indigo-200/90 leading-relaxed font-normal">{topRecommendation}</p>
+          <div className="ai-callout-violet bg-violet-950/20 border border-violet-900/60 p-4 rounded-xl space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-violet-400">Strategic Priority Recommendation</span>
+            <p className="text-xs text-violet-200/90 leading-relaxed font-normal">{topRecommendation}</p>
           </div>
         )}
       </div>
@@ -100,7 +100,7 @@ export default function BottleneckCard({ parsedData }) {
         {bottlenecks.length > 0 ? (
           <div className="space-y-3.5">
             {bottlenecks.map((item, idx) => (
-              <div key={idx} className="bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3 transition-colors hover:border-gray-700/50">
+              <div key={idx} className="ai-list-panel bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3 transition-colors hover:border-gray-700/50">
                 {/* Alert Title Row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-0.5">
@@ -112,8 +112,8 @@ export default function BottleneckCard({ parsedData }) {
 
                 {/* suggestion block */}
                 {item.suggestion && (
-                  <div className="pl-3 border-l-2 border-indigo-500/30 py-0.5 text-xs text-gray-400 leading-relaxed font-normal">
-                    <span className="font-semibold text-indigo-400 mr-1">Action Idea:</span>
+                  <div className="pl-3 border-l-2 border-violet-500/30 py-0.5 text-xs text-gray-400 leading-relaxed font-normal">
+                    <span className="font-semibold text-violet-400 mr-1">Action Idea:</span>
                     {item.suggestion}
                   </div>
                 )}

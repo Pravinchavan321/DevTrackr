@@ -131,7 +131,7 @@ export default function PullRequestsPage() {
               onClick={() => setStateFilter(filterVal)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide capitalize transition-all ${
                 stateFilter === filterVal
-                  ? 'bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-violet-600 text-white shadow-sm ring-1 ring-violet-500/50'
                   : 'text-gray-400 hover:text-gray-250'
               }`}
             >
@@ -192,7 +192,7 @@ export default function PullRequestsPage() {
                             </Badge>
                           </td>
                           <td className="py-3.5 px-5 font-semibold text-indigo-400">
-                            {pr.author || 'Unknown'}
+                            {pr.author?.login || 'Unknown'}
                           </td>
                           <td className="py-3.5 px-5 text-right font-mono text-gray-200">
                             {pr.mergeTimeHours ? `${Math.round(pr.mergeTimeHours)}h` : 'N/A'}

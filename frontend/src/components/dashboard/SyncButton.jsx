@@ -1,10 +1,21 @@
-import React from 'react';
-import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowPathIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import useGithub from '../../hooks/useGithub';
 import { toast } from 'react-hot-toast';
 
 export default function SyncButton() {
   const { selectedRepo, isSyncing, rateLimitWarning, syncRepository } = useGithub();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const prevSyncingRef = useRef(isSyncing);
+
+  useEffect(() => {
+    if (prevSyncingRef.current && !isSyncing) {
+      setShowSuccess(true);
+      const timer = setTimeout(() => setShowSuccess(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevSyncingRef.current = isSyncing;
+  }, [isSyncing]);
 
   if (!selectedRepo) {
     return null;
@@ -31,14 +42,24 @@ export default function SyncButton() {
         onClick={handleSync}
         disabled={isSyncing}
         title="Sync GitHub Data"
-        className={`flex items-center space-x-1.5 bg-gray-900 border border-gray-800 hover:border-indigo-500/30 text-gray-300 hover:text-indigo-400 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
-          isSyncing ? 'cursor-wait' : ''
+        className={`flex items-center space-x-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed [transform:perspective(400px)_translateZ(4px)] shadow-3d-press hover:[transform:perspective(400px)_translateZ(8px)] hover:shadow-3d-hover active:[transform:perspective(400px)_translateZ(0px)] active:shadow-3d-active ${
+          isSyncing
+            ? 'bg-violet-600/80 border border-violet-500/50 text-white cursor-wait'
+            : showSuccess
+            ? 'bg-emerald-500/80 border border-emerald-500/50 text-white'
+            : 'bg-gradient-to-r from-violet-600 to-violet-500 text-white border border-transparent'
         }`}
       >
-        <ArrowPathIcon
-          className={`h-4 w-4 ${isSyncing ? 'animate-spin text-indigo-500' : ''}`}
-        />
-        <span className="hidden sm:inline">Sync Data</span>
+        {showSuccess ? (
+          <CheckCircleIcon className="h-5 w-5" />
+        ) : (
+          <div className={`preserve-3d ${isSyncing ? 'animate-spin' : ''}`}>
+            <ArrowPathIcon className="h-5 w-5" />
+          </div>
+        )}
+        <span className="hidden sm:inline">
+          {isSyncing ? 'Syncing...' : showSuccess ? 'Synced!' : 'Sync Repository'}
+        </span>
       </button>
 
       {rateLimitWarning && (

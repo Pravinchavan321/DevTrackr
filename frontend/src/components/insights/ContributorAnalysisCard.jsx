@@ -56,7 +56,7 @@ export default function ContributorAnalysisCard({ parsedData }) {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 gap-4">
         {/* Team Health Score */}
-        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-800 bg-gray-950/20">
+        <div className="ai-insight-surface flex items-center justify-between p-4 rounded-xl border border-gray-800 bg-gray-950/20">
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Collaboration Score</span>
             <p className="text-sm font-semibold text-gray-200">
@@ -69,7 +69,7 @@ export default function ContributorAnalysisCard({ parsedData }) {
         </div>
 
         {/* Active Contributors Metric */}
-        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-800 bg-gray-950/20">
+        <div className="ai-insight-surface flex items-center justify-between p-4 rounded-xl border border-gray-800 bg-gray-950/20">
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Active Contributors</span>
             <p className="text-sm font-bold text-indigo-400">{activeContributors} Active</p>
@@ -85,7 +85,7 @@ export default function ContributorAnalysisCard({ parsedData }) {
       {/* Skews Grid: Inactive Contributors & Bus Contributors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Bus Factor / Redundancy Redundancies */}
-        <div className="bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3">
+        <div className="ai-list-panel bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3">
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400 flex items-center">
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mr-1.5"></span>
@@ -111,7 +111,7 @@ export default function ContributorAnalysisCard({ parsedData }) {
         </div>
 
         {/* Churn Alert / Inactive Members */}
-        <div className="bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3">
+        <div className="ai-list-panel bg-gray-950/20 border border-gray-800/80 rounded-xl p-4.5 space-y-3">
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 flex items-center">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>
@@ -144,7 +144,7 @@ export default function ContributorAnalysisCard({ parsedData }) {
           <ul className="space-y-2.5">
             {insights.map((insight, idx) => (
               <li key={idx} className="flex items-start text-xs text-gray-300 font-normal leading-relaxed">
-                <span className="text-indigo-400 mr-2 shrink-0">❖</span>
+                <span className="text-indigo-400 mr-2 shrink-0">&gt;</span>
                 {insight}
               </li>
             ))}

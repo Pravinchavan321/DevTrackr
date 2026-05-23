@@ -25,7 +25,7 @@ export default function Sidebar() {
     { name: 'Settings', to: '/settings', icon: Cog6ToothIcon }
   ];
 
-  const sidebarClasses = `fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col overflow-hidden border-r border-gray-800/80 bg-gray-900 p-5 shadow-2xl shadow-gray-950/20 transition-transform duration-300 ease-in-out md:static md:h-screen md:translate-x-0 ${
+  const sidebarClasses = `fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col overflow-hidden border-r border-gray-700/50 bg-gray-900/60 backdrop-blur-md p-5 shadow-[inset_-1px_0_20px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-in-out md:static md:h-screen md:translate-x-0 ${
     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
   }`;
 
@@ -41,22 +41,13 @@ export default function Sidebar() {
       <aside className={sidebarClasses}>
         <div className="flex items-center justify-between border-b border-gray-800 pb-5">
           <div className="flex min-w-0 items-center space-x-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 shadow-md shadow-indigo-600/30">
-              <svg
-                className="h-5 w-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-                />
-              </svg>
-            </div>
-            <span className="truncate text-lg font-extrabold tracking-tight text-white">DevTrackr</span>
+            <span className="brand-orb-3d" aria-hidden="true">
+              <span className="brand-orb-glow"></span>
+              <span className="brand-orb-core"></span>
+              <span className="brand-orb-ring brand-orb-ring-a"></span>
+              <span className="brand-orb-ring brand-orb-ring-b"></span>
+            </span>
+            <span className="truncate text-xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">DevTrackr</span>
           </div>
 
           <button
@@ -78,10 +69,10 @@ export default function Sidebar() {
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `group flex min-w-0 items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                  `group flex min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/15'
-                      : 'text-gray-400 hover:bg-gray-850 hover:text-gray-200'
+                      ? 'bg-violet-600/20 text-violet-300 border-l-2 border-violet-500 shadow-[inset_2px_0_8px_rgba(139,92,246,0.3)]'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/60 border-l-2 border-transparent'
                   }`
                 }
               >

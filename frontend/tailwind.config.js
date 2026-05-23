@@ -35,14 +35,25 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', '"Segoe UI"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"SFMono-Regular"', 'Consolas', 'monospace']
+        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
       },
       spacing: {
         4.5: '1.125rem',
         5.5: '1.375rem',
         6.5: '1.625rem',
         8.5: '2.125rem'
+      },
+      animation: {
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-slow': 'pulse-slow 4s ease-in-out infinite'
+      },
+      boxShadow: {
+        'violet-glow': '0 0 20px rgba(139, 92, 246, 0.3)',
+        'cyan-glow': '0 0 20px rgba(34, 211, 238, 0.3)'
+      },
+      transitionDuration: {
+        '400': '400ms'
       }
     }
   },

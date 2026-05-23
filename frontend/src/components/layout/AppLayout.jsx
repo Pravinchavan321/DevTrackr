@@ -32,17 +32,22 @@ export default function AppLayout() {
   }, [activeUserId, checkConnectionStatus, clearRepos, setActiveUserId, userId]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100 font-sans">
+    <div className="app-shell flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100 font-sans relative">
+      {/* Ambient Glow */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-violet-600/5 blur-3xl rounded-full pointer-events-none -z-0 translate-x-1/3 -translate-y-1/3"></div>
+      
       {/* Responsive Left Sidebar Navigation */}
-      <Sidebar />
+      <div className="z-10 flex h-full">
+        <Sidebar />
+      </div>
 
       {/* Main Right Content Panel */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden z-10 relative">
         {/* Sticky Global Dashboard Control Topbar */}
         <Topbar />
 
         {/* Scrollable Main View Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-950 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto bg-transparent p-4 sm:p-6 lg:p-8">
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>

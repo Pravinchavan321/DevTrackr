@@ -63,17 +63,17 @@ export default function RecommendationsCard({ parsedData }) {
     <div className="space-y-6">
       {/* Strategic Focus - Next Best Action Callout */}
       {nextBestAction && (
-        <div className="bg-gradient-to-r from-indigo-900/30 to-indigo-950/20 border border-indigo-500/30 p-5 rounded-xl space-y-2 relative overflow-hidden">
-          <div className="absolute right-4 top-4 text-indigo-500/10 scale-150">
+        <div className="ai-callout-violet bg-gradient-to-r from-violet-900/30 to-violet-950/20 border border-violet-500/30 p-5 rounded-xl space-y-2 relative overflow-hidden">
+          <div className="absolute right-4 top-4 text-violet-500/10 scale-150">
             <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           <div className="space-y-0.5 relative z-10">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Team Critical Path Action</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-violet-400">Team Critical Path Action</span>
             <h4 className="text-sm font-bold text-gray-100">Immediate Recommended Focus</h4>
           </div>
-          <p className="text-xs text-indigo-100/90 leading-relaxed font-normal relative z-10">{nextBestAction}</p>
+          <p className="text-xs text-violet-100/90 leading-relaxed font-normal relative z-10">{nextBestAction}</p>
         </div>
       )}
 
@@ -84,9 +84,9 @@ export default function RecommendationsCard({ parsedData }) {
         {recommendations.length > 0 ? (
           <div className="space-y-4">
             {recommendations.map((item, idx) => (
-              <div key={idx} className="flex gap-4 p-4.5 bg-gray-950/20 border border-gray-800/80 rounded-xl transition-colors hover:border-gray-700/50">
+              <div key={idx} className="ai-list-panel flex gap-4 p-4.5 bg-gray-950/20 border border-gray-800/80 rounded-xl transition-colors hover:border-gray-700/50">
                 {/* Numeric Index Bullet */}
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-800 text-xs font-semibold text-gray-400 border border-gray-700/50">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white shadow-md shadow-violet-500/30">
                   {idx + 1}
                 </div>
 
@@ -108,7 +108,7 @@ export default function RecommendationsCard({ parsedData }) {
                   {/* Concrete Action step */}
                   {item.action && (
                     <div className="bg-gray-950/40 p-3 rounded-lg border border-gray-900 text-xs text-gray-300 font-normal leading-relaxed">
-                      <span className="font-semibold text-indigo-400 mr-1">Steps:</span>
+                      <span className="font-semibold text-violet-400 mr-1">Steps:</span>
                       {item.action}
                     </div>
                   )}

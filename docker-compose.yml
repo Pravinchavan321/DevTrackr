@@ -28,7 +28,7 @@ services:
     env_file:
       - backend/.env
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - ./backend/src:/app/src
       - ./backend/__tests__:/app/__tests__
@@ -44,7 +44,7 @@ services:
     env_file:
       - frontend/.env
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public

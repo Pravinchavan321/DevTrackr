@@ -34,7 +34,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col justify-between overflow-x-hidden selection:bg-indigo-500 selection:text-white">
       {/* Background Gradients */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.3)_0%,rgba(0,0,0,0)_70%)] z-0"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600/10 blur-3xl rounded-full pointer-events-none -z-10"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full pointer-events-none -z-10"></div>
 
       {/* Header */}
       <header className="relative z-10 border-b border-gray-900 bg-gray-950/40 backdrop-blur-md sticky top-0 px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -80,29 +81,38 @@ export default function LandingPage() {
             <span>Powered by Google Gemini AI</span>
           </div>
           
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl font-sans">
+          <h1 className="text-5xl font-bold tracking-tight text-white md:text-7xl font-sans">
             AI-Driven Developer <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-violet-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-pulse-slow">
               Productivity Intelligence
             </span>
           </h1>
           
-          <p className="text-base sm:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Gain immediate insights into commits, pull requests, issues, and contributor velocities with premium dashboard charts and cached LLM recommendations.
           </p>
+          
+          {/* Floating Code Snippet */}
+          <div className="mx-auto w-fit mt-8 transition-all duration-400">
+            <div className="bg-gray-900/80 backdrop-blur-sm border border-violet-500/30 rounded-xl p-4 font-mono text-sm text-green-400 text-left space-y-1">
+              <p>$ git commit -m 'feat: ship v2.0'</p>
+              <p>✓ AI insights generated</p>
+              <p>✓ 42 commits analysed</p>
+            </div>
+          </div>
         </div>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-xs sm:max-w-md">
           <Link
             to="/register"
-            className="w-full sm:w-auto text-center font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-xl border border-transparent shadow-lg shadow-indigo-600/15 hover:shadow-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full sm:w-auto text-center font-semibold bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-cyan-500 text-white px-8 py-3 rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] active:translate-y-0.5"
           >
             Create Free Account
           </Link>
           <Link
             to="/login"
-            className="w-full sm:w-auto text-center font-semibold bg-gray-900 hover:bg-gray-850 text-gray-200 border border-gray-800 hover:border-gray-700/80 px-8 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full sm:w-auto text-center font-semibold bg-transparent border border-gray-600 hover:border-violet-500/50 hover:bg-violet-500/5 text-gray-300 hover:text-white px-8 py-3 rounded-xl transition-all duration-300"
           >
             Demo Sign In
           </Link>
@@ -114,20 +124,23 @@ export default function LandingPage() {
             {features.map((feature, idx) => {
               const Icon = feature.icon;
               return (
-                <div
-                  key={idx}
-                  className="bg-gray-900/60 border border-gray-850/80 hover:border-gray-800/80 rounded-2xl p-6 text-left space-y-4 hover:bg-gray-900 transition-all duration-200 group"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-850 border border-gray-800 text-gray-400 group-hover:bg-indigo-600/10 group-hover:text-indigo-400 group-hover:border-indigo-500/10 transition-all duration-200 shadow-sm">
-                    <Icon className="h-6 w-6" aria-hidden="true" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="text-sm font-bold text-gray-100 tracking-tight group-hover:text-white transition-colors">
-                      {feature.name}
-                    </h3>
-                    <p className="text-xs text-gray-405 leading-relaxed">
-                      {feature.description}
-                    </p>
+                <div key={idx} className="overflow-hidden rounded-2xl group">
+                  <div className="bg-gray-900/60 backdrop-blur-md border border-gray-700/50 p-6 text-left space-y-4 h-full transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2),0_4px_12px_rgba(0,0,0,0.4)] hover:border-violet-500/40">
+                    <div>
+                      <div className="w-fit">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 transition-all duration-300">
+                          <Icon className="h-6 w-6" aria-hidden="true" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="text-sm font-bold text-gray-100 tracking-tight group-hover:text-white transition-colors">
+                        {feature.name}
+                      </h3>
+                      <p className="text-xs text-gray-405 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );

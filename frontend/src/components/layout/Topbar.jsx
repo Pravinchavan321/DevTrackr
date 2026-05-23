@@ -22,7 +22,7 @@ export default function Topbar() {
   const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-800/80 bg-gray-900/75 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-700/50 bg-gray-900/60 px-4 backdrop-blur-md sm:px-6">
       {/* Mobile Drawer Trigger & Repo Selection */}
       <div className="flex min-w-0 items-center space-x-4">
         <button
@@ -61,7 +61,7 @@ export default function Topbar() {
         </div>
 
         {/* Avatar Placeholder */}
-        <div className="h-9 w-9 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm shadow-sm select-none">
+        <div className="h-9 w-9 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm shadow-sm select-none hover:ring-2 hover:ring-violet-500/50 transition-all">
           {(user?.name || '?').substring(0, 1).toUpperCase()}
         </div>
 

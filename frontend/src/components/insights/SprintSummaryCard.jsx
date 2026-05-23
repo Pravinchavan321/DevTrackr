@@ -28,15 +28,15 @@ export default function SprintSummaryCard({
   };
 
   const scoreColor = (score) => {
-    if (score >= 8) return 'text-emerald-500 border-emerald-500/30 bg-emerald-500/5';
-    if (score >= 5) return 'text-amber-500 border-amber-500/30 bg-amber-500/5';
-    return 'text-red-500 border-red-500/30 bg-red-500/5';
+    if (score >= 8) return 'text-white border-emerald-400 bg-emerald-500 shadow-md shadow-emerald-500/20';
+    if (score >= 5) return 'text-white border-amber-400 bg-amber-500 shadow-md shadow-amber-500/20';
+    return 'text-white border-red-400 bg-red-500 shadow-md shadow-red-500/20';
   };
 
   return (
     <div className="space-y-6">
       {/* Date Scoping Input Form */}
-      <form onSubmit={handleSubmit} className="bg-gray-950/40 p-4 rounded-xl border border-gray-800/80 space-y-4">
+      <form onSubmit={handleSubmit} className="ai-insight-surface bg-gray-950/40 p-4 rounded-xl border border-gray-800/80 space-y-4">
         <div className="flex flex-col space-y-1.5">
           <span className="text-xs font-semibold text-gray-300">Set Sprint Scoping Range</span>
           <p className="text-[10px] text-gray-400">Determine the repository activity dates to compile into the summary.</p>
@@ -49,7 +49,7 @@ export default function SprintSummaryCard({
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
               required
             />
           </div>
@@ -60,7 +60,7 @@ export default function SprintSummaryCard({
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
               required
             />
           </div>
@@ -68,7 +68,7 @@ export default function SprintSummaryCard({
         <button
           type="submit"
           disabled={generating}
-          className="w-full inline-flex items-center justify-center font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 transition-all duration-200 shadow-sm"
+          className="w-full inline-flex items-center justify-center font-medium bg-violet-600 hover:bg-violet-500 text-white rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50 transition-all duration-200 shadow-sm"
         >
           {generating ? 'Analyzing Scope...' : 'Update Sprint Analysis'}
         </button>
@@ -90,12 +90,12 @@ export default function SprintSummaryCard({
       ) : parsedData ? (
         <div className="space-y-5">
           {/* Executive Overview Row */}
-          <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-800 bg-gray-950/20">
+          <div className="ai-insight-surface flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-800 bg-gray-950/20">
             {/* Score Ring */}
             <div className="flex items-center space-x-3.5">
               <div className={`flex flex-col items-center justify-center h-12 w-12 rounded-full border text-center ${scoreColor(parsedData.sprintScore)}`}>
                 <span className="text-lg font-bold leading-none">{parsedData.sprintScore}</span>
-                <span className="text-[7px] uppercase font-semibold text-gray-400">Score</span>
+                <span className="text-[7px] uppercase font-bold text-white/90">Score</span>
               </div>
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Sprint Health Score</span>
@@ -112,7 +112,7 @@ export default function SprintSummaryCard({
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase ${
                   String(parsedData.velocity).toLowerCase().includes('high') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                   String(parsedData.velocity).toLowerCase().includes('low') ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                  'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                  'bg-violet-500/10 text-violet-400 border border-violet-500/20'
                 }`}>
                   {String(parsedData.velocity).split(' ')[0]}
                 </span>
@@ -122,7 +122,7 @@ export default function SprintSummaryCard({
 
           {/* Core Executive Summary */}
           {parsedData.summary && (
-            <div className="space-y-1">
+            <div className="ai-copy-block space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Executive Summary</span>
               <p className="text-sm text-gray-300 leading-relaxed font-normal">{parsedData.summary}</p>
             </div>
@@ -131,7 +131,7 @@ export default function SprintSummaryCard({
           {/* Highlights & Concerns Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Highlights Block */}
-            <div className="space-y-2.5">
+            <div className="ai-list-panel space-y-2.5">
               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
                 Key Highlights
@@ -140,7 +140,7 @@ export default function SprintSummaryCard({
                 <ul className="space-y-2">
                   {parsedData.highlights.map((highlight, idx) => (
                     <li key={idx} className="flex items-start text-xs text-gray-300 font-normal leading-relaxed">
-                      <span className="text-emerald-500 mr-2 shrink-0">✓</span>
+                      <span className="text-emerald-500 mr-2 shrink-0">+</span>
                       {highlight}
                     </li>
                   ))}
@@ -151,7 +151,7 @@ export default function SprintSummaryCard({
             </div>
 
             {/* Concerns Block */}
-            <div className="space-y-2.5">
+            <div className="ai-list-panel space-y-2.5">
               <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 flex items-center">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>
                 Sprint Impediments
@@ -160,7 +160,7 @@ export default function SprintSummaryCard({
                 <ul className="space-y-2">
                   {parsedData.concerns.map((concern, idx) => (
                     <li key={idx} className="flex items-start text-xs text-gray-300 font-normal leading-relaxed">
-                      <span className="text-amber-500 mr-2 shrink-0">⚠</span>
+                      <span className="text-amber-500 mr-2 shrink-0">!</span>
                       {concern}
                     </li>
                   ))}
