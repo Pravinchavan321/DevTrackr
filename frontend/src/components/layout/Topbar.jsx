@@ -7,15 +7,17 @@ import {
 } from '@heroicons/react/24/outline';
 import useUiStore from '../../store/uiStore';
 import useAuth from '../../hooks/useAuth';
-import useGithub from '../../hooks/useGithub';
 import useRepoStore from '../../store/repoStore';
 import RepoSelector from '../dashboard/RepoSelector';
 import SyncButton from '../dashboard/SyncButton';
 
 export default function Topbar() {
-  const { toggleSidebar, theme, toggleTheme } = useUiStore();
+  const toggleSidebar = useUiStore((state) => state.toggleSidebar);
+  const theme = useUiStore((state) => state.theme);
+  const toggleTheme = useUiStore((state) => state.toggleTheme);
   const { user, logout } = useAuth();
-  const { isConnected, statusLoading } = useGithub();
+  const isConnected = useRepoStore((state) => state.isConnected);
+  const statusLoading = useRepoStore((state) => state.statusLoading);
   const activeUserId = useRepoStore((state) => state.activeUserId);
   const userId = user?._id || user?.id || null;
   const showRepositoryControls = isConnected && !statusLoading && activeUserId === userId;

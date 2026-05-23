@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import useRepoStore from '../store/repoStore';
 import * as githubApi from '../api/github.api';
+import { invalidateAnalyticsCache } from './useAnalytics';
 
 export default function useGithub() {
   const {
@@ -30,13 +31,14 @@ export default function useGithub() {
       if (response && response.success) {
         const nextConnected = response.data.connected;
         const nextUsername = response.data.username || '';
+        const currentUsername = useRepoStore.getState().githubUsername;
 
         if (!nextConnected) {
           clearRepos();
           return;
         }
 
-        if (githubUsername && githubUsername !== nextUsername) {
+        if (currentUsername && currentUsername !== nextUsername) {
           setRepos([]);
           setSelectedRepo(null);
         }
@@ -53,7 +55,7 @@ export default function useGithub() {
     } finally {
       setStatusLoading(false);
     }
-  }, [clearRepos, githubUsername, setConnectionStatus, setRepos, setSelectedRepo, setStatusLoading]);
+  }, [clearRepos, setConnectionStatus, setRepos, setSelectedRepo, setStatusLoading]);
 
   const connect = useCallback(async () => {
     try {
@@ -132,6 +134,7 @@ export default function useGithub() {
           _id: syncedRepo.id || syncedRepo._id
         };
 
+        invalidateAnalyticsCache();
         setSelectedRepo(normalizedRepo);
         setRepos(
           repos.map((repo) =>

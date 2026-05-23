@@ -15,15 +15,18 @@ const useUiStore = create((set) => ({
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   
-  setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+  setSidebarOpen: (sidebarOpen) =>
+    set((state) => (state.sidebarOpen === sidebarOpen ? state : { sidebarOpen })),
   
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) =>
+    set((state) => (state.theme === theme ? state : { theme })),
 
   toggleTheme: () => set((state) => ({
     theme: state.theme === 'dark' ? 'light' : 'dark'
   })),
   
-  setGlobalLoading: (globalLoading) => set({ globalLoading })
+  setGlobalLoading: (globalLoading) =>
+    set((state) => (state.globalLoading === globalLoading ? state : { globalLoading }))
 }));
 
 export default useUiStore;

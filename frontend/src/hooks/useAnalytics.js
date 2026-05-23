@@ -1,6 +1,80 @@
 import { useState, useCallback } from 'react';
 import * as analyticsApi from '../api/analytics.api';
 
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const analyticsCache = new Map();
+const inflightRequests = new Map();
+
+const stableParamsKey = (params = {}) =>
+  Object.keys(params)
+    .sort()
+    .map((key) => `${key}:${params[key]}`)
+    .join('|');
+
+const cacheKey = (type, repoId, params = {}) => `${type}:${repoId}:${stableParamsKey(params)}`;
+
+const getCachedData = (key) => {
+  const cached = analyticsCache.get(key);
+  if (!cached) return null;
+
+  if (Date.now() - cached.updatedAt > CACHE_TTL_MS) {
+    analyticsCache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+};
+
+const fetchCachedAnalytics = async (key, requestFn) => {
+  const cached = getCachedData(key);
+  if (cached !== null) {
+    return cached;
+  }
+
+  if (inflightRequests.has(key)) {
+    return inflightRequests.get(key);
+  }
+
+  const request = requestFn()
+    .then((response) => {
+      if (response && response.success) {
+        analyticsCache.set(key, {
+          data: response.data,
+          updatedAt: Date.now()
+        });
+        return response.data;
+      }
+
+      throw new Error(response?.message || 'Failed to fetch analytics data');
+    })
+    .finally(() => {
+      inflightRequests.delete(key);
+    });
+
+  inflightRequests.set(key, request);
+  return request;
+};
+
+export const invalidateAnalyticsCache = (repoId = null) => {
+  if (!repoId) {
+    analyticsCache.clear();
+    inflightRequests.clear();
+    return;
+  }
+
+  for (const key of analyticsCache.keys()) {
+    if (key.includes(`:${repoId}:`)) {
+      analyticsCache.delete(key);
+    }
+  }
+
+  for (const key of inflightRequests.keys()) {
+    if (key.includes(`:${repoId}:`)) {
+      inflightRequests.delete(key);
+    }
+  }
+};
+
 export default function useAnalytics() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -19,13 +93,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('velocity', repoId);
     try {
-      const response = await analyticsApi.getVelocity(repoId);
-      if (response && response.success) {
-        setVelocity(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch velocity metrics');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getVelocity(repoId));
+      setVelocity(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch velocity metrics';
       setError(msg);
@@ -39,13 +111,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('commitChart', repoId, params);
     try {
-      const response = await analyticsApi.getCommitChart(repoId, params);
-      if (response && response.success) {
-        setCommitChart(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch commit chart data');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getCommitChart(repoId, params));
+      setCommitChart(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch commit chart data';
       setError(msg);
@@ -59,13 +129,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('commits', repoId, params);
     try {
-      const response = await analyticsApi.getCommits(repoId, params);
-      if (response && response.success) {
-        setCommits(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch commits list');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getCommits(repoId, params));
+      setCommits(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch commits list';
       setError(msg);
@@ -79,13 +147,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('contributors', repoId);
     try {
-      const response = await analyticsApi.getContributors(repoId);
-      if (response && response.success) {
-        setContributors(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch contributors');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getContributors(repoId));
+      setContributors(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch contributors';
       setError(msg);
@@ -99,13 +165,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('pullRequests', repoId, params);
     try {
-      const response = await analyticsApi.getPullRequests(repoId, params);
-      if (response && response.success) {
-        setPullRequests(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch pull requests');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getPullRequests(repoId, params));
+      setPullRequests(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch pull requests';
       setError(msg);
@@ -119,13 +183,11 @@ export default function useAnalytics() {
     if (!repoId) return;
     setLoading(true);
     setError(null);
+    const key = cacheKey('issues', repoId, params);
     try {
-      const response = await analyticsApi.getIssues(repoId, params);
-      if (response && response.success) {
-        setIssues(response.data);
-        return response.data;
-      }
-      throw new Error(response?.message || 'Failed to fetch issues');
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getIssues(repoId, params));
+      setIssues(data);
+      return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to fetch issues';
       setError(msg);

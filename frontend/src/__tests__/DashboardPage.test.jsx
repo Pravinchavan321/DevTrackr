@@ -1,22 +1,14 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DashboardPage from '../pages/DashboardPage';
+import useRepoStore from '../store/repoStore';
 
 // Mock hooks
 vi.mock('../hooks/useAuth', () => ({
   default: () => ({
     user: { name: 'Pravin' }
-  })
-}));
-
-vi.mock('../hooks/useGithub', () => ({
-  default: () => ({
-    selectedRepo: null,
-    isConnected: true,
-    checkConnectionStatus: vi.fn(),
-    statusLoading: false
   })
 }));
 
@@ -41,6 +33,14 @@ beforeAll(() => {
 });
 
 describe('DashboardPage Component', () => {
+  beforeEach(() => {
+    useRepoStore.setState({
+      selectedRepo: null,
+      isConnected: true,
+      statusLoading: false
+    });
+  });
+
   it('shows empty state when no repo is selected', () => {
     render(
       <MemoryRouter>

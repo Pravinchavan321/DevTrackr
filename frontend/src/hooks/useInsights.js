@@ -3,14 +3,63 @@ import toast from 'react-hot-toast';
 import * as aiApi from '../api/ai.api';
 import * as exportApi from '../api/export.api';
 
+const INSIGHTS_CACHE_TTL_MS = 5 * 60 * 1000;
+const emptyInsights = () => ({
+  sprint_summary: null,
+  bottleneck: null,
+  contributor_analysis: null,
+  recommendations: null
+});
+const insightsCache = new Map();
+const insightsInflight = new Map();
+
+const mapInsightDocs = (insightsArray = []) => {
+  const mapped = emptyInsights();
+
+  insightsArray.forEach((item) => {
+    if (item && item.type && mapped[item.type] === null) {
+      // Keep the latest one per type, which sort generatedAt: -1 handles.
+      mapped[item.type] = item;
+    } else if (item && item.type) {
+      mapped[item.type] = item;
+    }
+  });
+
+  return mapped;
+};
+
+const getCachedInsights = (repoId) => {
+  const cached = insightsCache.get(repoId);
+  if (!cached) return null;
+
+  if (Date.now() - cached.updatedAt > INSIGHTS_CACHE_TTL_MS) {
+    insightsCache.delete(repoId);
+    return null;
+  }
+
+  return cached.data;
+};
+
+const setInsightsCache = (repoId, data) => {
+  insightsCache.set(repoId, {
+    data,
+    updatedAt: Date.now()
+  });
+};
+
+const updateInsightCacheDoc = (repoId, type, doc) => {
+  const current = getCachedInsights(repoId) || emptyInsights();
+  const next = {
+    ...current,
+    [type]: doc
+  };
+  setInsightsCache(repoId, next);
+  return next;
+};
+
 export default function useInsights() {
   const [loading, setLoading] = useState(false);
-  const [cachedInsights, setCachedInsights] = useState({
-    sprint_summary: null,
-    bottleneck: null,
-    contributor_analysis: null,
-    recommendations: null
-  });
+  const [cachedInsights, setCachedInsights] = useState(emptyInsights);
   const [error, setError] = useState(null);
   
   const [generating, setGenerating] = useState({
@@ -26,35 +75,30 @@ export default function useInsights() {
 
   const fetchInsights = useCallback(async (repoId) => {
     if (!repoId) return;
+    const cached = getCachedInsights(repoId);
+    if (cached) {
+      setCachedInsights(cached);
+      setError(null);
+      return cached;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const response = await aiApi.getInsights(repoId);
+      const request = insightsInflight.get(repoId) || aiApi.getInsights(repoId);
+      insightsInflight.set(repoId, request);
+      const response = await request;
       if (response && response.success) {
-        const insightsArray = response.data || [];
-        const mapped = {
-          sprint_summary: null,
-          bottleneck: null,
-          contributor_analysis: null,
-          recommendations: null
-        };
-        
-        insightsArray.forEach(item => {
-          if (item && item.type && mapped[item.type] === null) {
-            // Keep the latest one per type, which sort generatedAt: -1 handles
-            mapped[item.type] = item;
-          } else if (item && item.type) {
-            // Fallback for any other custom types
-            mapped[item.type] = item;
-          }
-        });
-        
+        const mapped = mapInsightDocs(response.data || []);
+        setInsightsCache(repoId, mapped);
         setCachedInsights(mapped);
+        return mapped;
       }
     } catch (err) {
       const errMsg = err.response?.data?.message || 'Failed to fetch AI insights';
       setError(errMsg);
     } finally {
+      insightsInflight.delete(repoId);
       setLoading(false);
     }
   }, []);
@@ -69,10 +113,8 @@ export default function useInsights() {
       const response = await aiApi.generateSprintSummary(repoId, body, options);
       if (response && response.success) {
         const doc = response.data;
-        setCachedInsights(prev => ({
-          ...prev,
-          sprint_summary: doc
-        }));
+        const next = updateInsightCacheDoc(repoId, 'sprint_summary', doc);
+        setCachedInsights(next);
         toast.success(options.force ? 'Sprint summary regenerated!' : 'Sprint summary generated!');
         return doc;
       }
@@ -97,10 +139,8 @@ export default function useInsights() {
       const response = await aiApi.generateBottlenecks(repoId, options);
       if (response && response.success) {
         const doc = response.data;
-        setCachedInsights(prev => ({
-          ...prev,
-          bottleneck: doc
-        }));
+        const next = updateInsightCacheDoc(repoId, 'bottleneck', doc);
+        setCachedInsights(next);
         toast.success(options.force ? 'Bottleneck analysis regenerated!' : 'Bottleneck analysis generated!');
         return doc;
       }
@@ -125,10 +165,8 @@ export default function useInsights() {
       const response = await aiApi.generateContributorAnalysis(repoId, options);
       if (response && response.success) {
         const doc = response.data;
-        setCachedInsights(prev => ({
-          ...prev,
-          contributor_analysis: doc
-        }));
+        const next = updateInsightCacheDoc(repoId, 'contributor_analysis', doc);
+        setCachedInsights(next);
         toast.success(options.force ? 'Contributor analysis regenerated!' : 'Contributor analysis generated!');
         return doc;
       }
@@ -153,10 +191,8 @@ export default function useInsights() {
       const response = await aiApi.generateRecommendations(repoId, options);
       if (response && response.success) {
         const doc = response.data;
-        setCachedInsights(prev => ({
-          ...prev,
-          recommendations: doc
-        }));
+        const next = updateInsightCacheDoc(repoId, 'recommendations', doc);
+        setCachedInsights(next);
         toast.success(options.force ? 'Recommendations regenerated!' : 'Recommendations generated!');
         return doc;
       }

@@ -3,33 +3,90 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import ErrorBoundary from '../common/ErrorBoundary';
-import useGithub from '../../hooks/useGithub';
 import useAuth from '../../hooks/useAuth';
 import useRepoStore from '../../store/repoStore';
+import * as githubApi from '../../api/github.api';
 
 export default function AppLayout() {
   const { user } = useAuth();
-  const { checkConnectionStatus } = useGithub();
   const activeUserId = useRepoStore((state) => state.activeUserId);
   const clearRepos = useRepoStore((state) => state.clearRepos);
+  const setConnectionStatus = useRepoStore((state) => state.setConnectionStatus);
+  const setRepos = useRepoStore((state) => state.setRepos);
+  const setSelectedRepo = useRepoStore((state) => state.setSelectedRepo);
   const setActiveUserId = useRepoStore((state) => state.setActiveUserId);
+  const setStatusLoading = useRepoStore((state) => state.setStatusLoading);
   const userId = user?._id || user?.id || null;
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!userId) {
       clearRepos();
       setActiveUserId(null);
-      return;
+      return undefined;
     }
 
     if (activeUserId !== userId) {
       clearRepos();
       setActiveUserId(userId);
-      return;
+      return undefined;
     }
 
+    const checkConnectionStatus = async () => {
+      setStatusLoading(true);
+      try {
+        const response = await githubApi.getGithubStatus();
+        if (cancelled) return;
+
+        if (response && response.success) {
+          const nextConnected = response.data.connected;
+          const nextUsername = response.data.username || '';
+          const currentUsername = useRepoStore.getState().githubUsername;
+
+          if (!nextConnected) {
+            clearRepos();
+            return;
+          }
+
+          if (currentUsername && currentUsername !== nextUsername) {
+            setRepos([]);
+            setSelectedRepo(null);
+          }
+
+          setConnectionStatus({
+            isConnected: nextConnected,
+            githubUsername: nextUsername
+          });
+        } else {
+          clearRepos();
+        }
+      } catch (error) {
+        if (!cancelled) {
+          clearRepos();
+        }
+      } finally {
+        if (!cancelled) {
+          setStatusLoading(false);
+        }
+      }
+    };
+
     checkConnectionStatus();
-  }, [activeUserId, checkConnectionStatus, clearRepos, setActiveUserId, userId]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeUserId,
+    clearRepos,
+    setActiveUserId,
+    setConnectionStatus,
+    setRepos,
+    setSelectedRepo,
+    setStatusLoading,
+    userId
+  ]);
 
   return (
     <div className="app-shell flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100 font-sans relative">

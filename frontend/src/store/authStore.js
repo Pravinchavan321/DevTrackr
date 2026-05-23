@@ -20,14 +20,16 @@ const useAuthStore = create((set) => ({
     isLoading: false
   }),
 
-  setUser: (user) => set({ user }),
+  setUser: (user) =>
+    set((state) => (state.user === user ? state : { user })),
 
   setAccessToken: (accessToken) => set({
     accessToken,
     isAuthenticated: !!accessToken
   }),
 
-  setLoading: (isLoading) => set({ isLoading })
+  setLoading: (isLoading) =>
+    set((state) => (state.isLoading === isLoading ? state : { isLoading }))
 }));
 
 export default useAuthStore;

@@ -13,7 +13,8 @@ import {
 import useUiStore from '../../store/uiStore';
 
 export default function Sidebar() {
-  const { sidebarOpen, setSidebarOpen } = useUiStore();
+  const sidebarOpen = useUiStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
 
   const navigation = [
     { name: 'Dashboard', to: '/dashboard', icon: HomeIcon },

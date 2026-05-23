@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import useGithub from '../hooks/useGithub';
+import useRepoStore from '../store/repoStore';
 import useAnalytics from '../hooks/useAnalytics';
 import EmptyState from '../components/common/EmptyState';
 import SkeletonLoader from '../components/common/SkeletonLoader';
@@ -11,7 +11,7 @@ import { ArrowPathIcon, UserIcon } from '@heroicons/react/24/outline';
 import SyncButton from '../components/dashboard/SyncButton';
 
 export default function ContributorsPage() {
-  const { selectedRepo } = useGithub();
+  const selectedRepo = useRepoStore((state) => state.selectedRepo);
   const {
     contributors,
     fetchContributors

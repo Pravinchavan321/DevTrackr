@@ -27,18 +27,27 @@ const useRepoStore = create((set) => ({
       return { selectedRepo };
     }),
   
-  setSyncing: (isSyncing) => set({ isSyncing }),
+  setSyncing: (isSyncing) =>
+    set((state) => (state.isSyncing === isSyncing ? state : { isSyncing })),
   
-  setRateLimitWarning: (rateLimitWarning) => set({ rateLimitWarning }),
+  setRateLimitWarning: (rateLimitWarning) =>
+    set((state) => (state.rateLimitWarning === rateLimitWarning ? state : { rateLimitWarning })),
 
   setConnectionStatus: ({ isConnected, githubUsername = '' }) =>
-    set({ isConnected, githubUsername }),
+    set((state) =>
+      state.isConnected === isConnected && state.githubUsername === githubUsername
+        ? state
+        : { isConnected, githubUsername }
+    ),
 
-  setStatusLoading: (statusLoading) => set({ statusLoading }),
+  setStatusLoading: (statusLoading) =>
+    set((state) => (state.statusLoading === statusLoading ? state : { statusLoading })),
 
-  setReposLoading: (reposLoading) => set({ reposLoading }),
+  setReposLoading: (reposLoading) =>
+    set((state) => (state.reposLoading === reposLoading ? state : { reposLoading })),
 
-  setActiveUserId: (activeUserId) => set({ activeUserId }),
+  setActiveUserId: (activeUserId) =>
+    set((state) => (state.activeUserId === activeUserId ? state : { activeUserId })),
   
   clearRepos: () =>
     set((state) => {

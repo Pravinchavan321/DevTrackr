@@ -14,7 +14,7 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../hooks/useAuth';
-import useGithub from '../hooks/useGithub';
+import useRepoStore from '../store/repoStore';
 import useAnalytics from '../hooks/useAnalytics';
 import StatsCard from '../components/dashboard/StatsCard';
 import ActivityFeed from '../components/dashboard/ActivityFeed';
@@ -27,7 +27,9 @@ import SyncButton from '../components/dashboard/SyncButton';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { selectedRepo, isConnected, checkConnectionStatus, statusLoading } = useGithub();
+  const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const isConnected = useRepoStore((state) => state.isConnected);
+  const statusLoading = useRepoStore((state) => state.statusLoading);
   
   const {
     velocity,
@@ -59,10 +61,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }, [fetchVelocity, fetchCommitChart, fetchCommits]);
-
-  useEffect(() => {
-    checkConnectionStatus();
-  }, [checkConnectionStatus]);
 
   useEffect(() => {
     if (selectedRepo && selectedRepo._id) {

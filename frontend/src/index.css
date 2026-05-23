@@ -278,7 +278,7 @@ body {
     linear-gradient(#000 0 0);
   mask-composite: exclude;
   pointer-events: none;
-  animation: ui-rotate-border 9s linear infinite;
+  animation: ui-rotate-border 14s steps(120) infinite;
 }
 
 .app-shell :where(
