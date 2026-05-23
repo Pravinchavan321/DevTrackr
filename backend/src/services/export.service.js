@@ -163,10 +163,10 @@ export const getReportData = async (repoId, userId) => {
   const contributors = await Commit.aggregate(contributorsPipeline);
   const totalContributors = contributors.length;
 
-  // 3. Recent commits (max 10)
+  // 3. Recent commits (max 20)
   const recentCommits = await Commit.find({ repoId: repoObjectId })
     .sort({ committedAt: -1 })
-    .limit(10)
+    .limit(20)
     .lean();
 
   // 4. Recent PRs (max 10)
@@ -181,11 +181,10 @@ export const getReportData = async (repoId, userId) => {
     .limit(10)
     .lean();
 
-  // 6. Cached AI insights
-  const insights = await AIInsight.find({ repoId: repoObjectId }).lean();
-  const sprintSummary = insights.find(i => i.type === 'sprint_summary');
-  const bottleneck = insights.find(i => i.type === 'bottleneck');
-  const recommendations = insights.find(i => i.type === 'recommendations');
+  // 6. Cached AI insights (fetch latest for each type)
+  const sprintSummary = await AIInsight.findOne({ repoId: repoObjectId, type: 'sprint_summary' }).sort({ generatedAt: -1 }).lean();
+  const bottleneck = await AIInsight.findOne({ repoId: repoObjectId, type: 'bottleneck' }).sort({ generatedAt: -1 }).lean();
+  const recommendations = await AIInsight.findOne({ repoId: repoObjectId, type: 'recommendations' }).sort({ generatedAt: -1 }).lean();
 
   return {
     repo,
@@ -226,71 +225,73 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
 
   doc.pipe(writableStream);
 
+  // Background for every page
+  doc.on('pageAdded', () => {
+    doc.rect(0, 0, doc.page.width, doc.page.height).fill('#ffffff');
+  });
+
   // 1. Cover Page
-  // Draw primary background header
-  doc.rect(0, 0, 595.28, 260).fill('#312e81');
+  doc.rect(0, 0, doc.page.width, doc.page.height).fill('#ffffff');
+  
+  // Header accent
+  doc.rect(0, 0, 595.28, 200).fill('#f8f8f8');
+  doc.strokeColor('#e5e7eb').lineWidth(1).rect(0, 0, 595.28, 200).stroke();
 
   // Title on cover page
-  doc.fillColor('#ffffff')
+  doc.fillColor('#1f1f1f')
      .font('Helvetica-Bold')
      .fontSize(28)
-     .text('DevTrackr', 50, 80)
+     .text('DevTrackr', 50, 60)
      .fontSize(20)
-     .text('Repository Productivity Report', 50, 120);
+     .text('Repository Productivity Report', 50, 100);
 
   // Repository Full Name
-  doc.fillColor('#e0e7ff')
+  doc.fillColor('#7c3aed')
      .font('Helvetica-Bold')
      .fontSize(14)
-     .text(data.repo.fullName, 50, 180);
+     .text(data.repo.fullName, 50, 150);
 
   // Generated date
   doc.font('Helvetica-Oblique')
      .fontSize(10)
-     .text(`Generated on: ${new Date().toUTCString()}`, 50, 210);
+     .fillColor('#6b7280')
+     .text(`Generated on: ${new Date().toUTCString()}`, 50, 175);
 
   // Repo details card background
-  doc.rect(50, 290, 495, 140).fill('#f8fafc');
+  doc.rect(50, 240, 495, 140).fill('#f8f8f8');
+  doc.strokeColor('#e5e7eb').lineWidth(1).rect(50, 240, 495, 140).stroke();
 
-  // Rect border
-  doc.strokeColor('#e2e8f0')
-     .lineWidth(1)
-     .rect(50, 290, 495, 140)
-     .stroke();
-
-  doc.fillColor('#1f2937')
+  doc.fillColor('#1f1f1f')
      .font('Helvetica-Bold')
      .fontSize(12)
-     .text('Repository Information', 65, 305);
+     .text('Repository Information', 65, 255);
 
   doc.font('Helvetica')
      .fontSize(10)
      .fillColor('#4b5563')
-     .text('Description:', 65, 330)
-     .text('Primary Language:', 65, 350)
-     .text('Stars:', 65, 370)
-     .text('Forks:', 65, 390)
-     .text('Open Issues:', 300, 370)
-     .text('Default Branch:', 300, 390);
+     .text('Description:', 65, 280)
+     .text('Primary Language:', 65, 300)
+     .text('Stars:', 65, 320)
+     .text('Forks:', 65, 340)
+     .text('Open Issues:', 300, 320)
+     .text('Default Branch:', 300, 340);
 
-  doc.fillColor('#1f2937')
-     .text(data.repo.description || 'No description provided.', 150, 330, { width: 380, height: 15, ellipsis: true })
-     .text(data.repo.language || 'Not specified', 170, 350)
-     .text(data.repo.stars?.toString() || '0', 100, 370)
-     .text(data.repo.forks?.toString() || '0', 100, 390)
-     .text(data.repo.openIssuesCount?.toString() || '0', 380, 370)
-     .text(data.repo.defaultBranch || 'main', 380, 390);
+  doc.fillColor('#1f1f1f')
+     .text(data.repo.description || 'No description provided.', 150, 280, { width: 380, height: 15, ellipsis: true })
+     .text(data.repo.language || 'Not specified', 170, 300)
+     .text(data.repo.stars?.toString() || '0', 100, 320)
+     .text(data.repo.forks?.toString() || '0', 100, 340)
+     .text(data.repo.openIssuesCount?.toString() || '0', 380, 320)
+     .text(data.repo.defaultBranch || 'main', 380, 340);
 
   // Footer on cover page
-  doc.fillColor('#9ca3af')
+  doc.fillColor('#6b7280')
      .font('Helvetica')
      .fontSize(9)
      .text('DevTrackr AI-Powered Developer Productivity Insights', 50, 750, { align: 'center', width: 495 });
 
-  // Add Page break for content
   doc.addPage();
 
-  // Section layout helper
   const checkPageOverflow = (neededHeight) => {
     if (doc.y + neededHeight > 730) {
       doc.addPage();
@@ -299,37 +300,35 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
 
   const drawSectionHeader = (title) => {
     checkPageOverflow(50);
-    doc.rect(50, doc.y, 5, 20).fill('#4f46e5');
-    doc.fillColor('#1f2937')
+    doc.rect(50, doc.y, 495, 24).fill('#4c1d95');
+    doc.fillColor('#ffffff')
        .font('Helvetica-Bold')
-       .fontSize(14)
-       .text(title, 65, doc.y + 3);
-    doc.moveDown(1.2);
+       .fontSize(12)
+       .text(title, 65, doc.y + 6);
+    doc.moveDown(1.5);
   };
 
   // 2. Stats Summary
   drawSectionHeader('Statistics Summary');
 
   const statsStartY = doc.y;
-  doc.rect(50, statsStartY, 495, 120).fill('#f8fafc');
-  doc.strokeColor('#e2e8f0').lineWidth(1).rect(50, statsStartY, 495, 120).stroke();
+  doc.rect(50, statsStartY, 495, 120).fill('#f8f8f8');
+  doc.strokeColor('#e5e7eb').lineWidth(1).rect(50, statsStartY, 495, 120).stroke();
 
   doc.fillColor('#4b5563')
      .font('Helvetica-Bold')
      .fontSize(10)
-     // Col 1
      .text('Total Commits:', 70, statsStartY + 15)
      .text('Total Pull Requests:', 70, statsStartY + 35)
      .text('Merged Pull Requests:', 70, statsStartY + 55)
      .text('Open Pull Requests:', 70, statsStartY + 75)
      .text('Closed Pull Requests:', 70, statsStartY + 95)
-     // Col 2
      .text('Open Issues:', 300, statsStartY + 15)
      .text('Closed Issues:', 300, statsStartY + 35)
      .text('Total Contributors:', 300, statsStartY + 55)
      .text('Avg PR Merge Time:', 300, statsStartY + 75);
 
-  doc.fillColor('#1f2937')
+  doc.fillColor('#1f1f1f')
      .font('Helvetica')
      .text(data.stats.totalCommits.toString(), 200, statsStartY + 15)
      .text(data.stats.totalPRs.toString(), 200, statsStartY + 35)
@@ -344,6 +343,40 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
   doc.y = statsStartY + 120;
   doc.moveDown(1.5);
 
+  // Helper for rendering tables
+  const drawTable = (headers, rows, colWidths, startX = 50) => {
+    let tableY = doc.y;
+    doc.rect(startX, tableY, 495, 20).fill('#e5e7eb');
+    doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(9);
+    
+    let currentX = startX + 5;
+    headers.forEach((h, i) => {
+      doc.text(h.label, currentX, tableY + 5, { width: colWidths[i], align: h.align || 'left' });
+      currentX += colWidths[i];
+    });
+
+    tableY += 20;
+
+    rows.forEach((row, rowIndex) => {
+      const beforeY = doc.y;
+      checkPageOverflow(25);
+      if (doc.y < beforeY) tableY = doc.y;
+
+      doc.rect(startX, tableY, 495, 20).fill(rowIndex % 2 === 0 ? '#f5f5fa' : '#ffffff');
+      
+      doc.fillColor('#1f1f1f').font('Helvetica').fontSize(9);
+      currentX = startX + 5;
+      row.forEach((cell, i) => {
+        doc.text(cell || '', currentX, tableY + 5, { width: colWidths[i], align: headers[i].align || 'left', ellipsis: true });
+        currentX += colWidths[i];
+      });
+
+      tableY += 20;
+      doc.y = tableY;
+    });
+    doc.moveDown(1.5);
+  };
+
   // 3. Top Contributors Table
   drawSectionHeader('Top Contributors');
   if (data.contributors.length === 0) {
@@ -351,88 +384,41 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     checkPageOverflow(60);
-    let tableY = doc.y;
-
-    // Draw Header
-    doc.rect(50, tableY, 495, 20).fill('#e0e7ff');
-    doc.fillColor('#312e81').font('Helvetica-Bold').fontSize(9);
-    doc.text('Contributor', 55, tableY + 5, { width: 140, ellipsis: true });
-    doc.text('Commits', 205, tableY + 5, { width: 55, align: 'right' });
-    doc.text('Additions', 265, tableY + 5, { width: 75, align: 'right' });
-    doc.text('Deletions', 345, tableY + 5, { width: 75, align: 'right' });
-    doc.text('Last Commit', 425, tableY + 5, { width: 115, align: 'right' });
-
-    tableY += 20;
-
-    const topContributors = data.contributors.slice(0, 10);
-    for (let index = 0; index < topContributors.length; index++) {
-      const c = topContributors[index];
-      const beforeY = doc.y;
-      checkPageOverflow(25);
-      if (doc.y < beforeY) {
-        tableY = doc.y;
-      }
-
-      if (index % 2 === 1) {
-        doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      }
-
-      doc.fillColor('#1f2937').font('Helvetica').fontSize(9);
-      doc.text(c.login || c.name || 'Unknown', 55, tableY + 5, { width: 140, ellipsis: true });
-      doc.text(c.totalCommits.toString(), 205, tableY + 5, { width: 55, align: 'right' });
-      doc.text(`+${c.additions}`, 265, tableY + 5, { width: 75, align: 'right' });
-      doc.text(`-${c.deletions}`, 345, tableY + 5, { width: 75, align: 'right' });
-      doc.text(formatDate(c.lastCommitAt), 425, tableY + 5, { width: 115, align: 'right' });
-
-      tableY += 20;
-      doc.y = tableY;
-    }
-    doc.moveDown(1.5);
+    const headers = [
+      { label: 'Contributor' }, { label: 'Commits', align: 'right' },
+      { label: 'Additions', align: 'right' }, { label: 'Deletions', align: 'right' },
+      { label: 'Last Commit', align: 'right' }
+    ];
+    const colWidths = [140, 60, 80, 80, 120];
+    const rows = data.contributors.slice(0, 10).map(c => [
+      c.login || c.name || 'Unknown',
+      c.totalCommits.toString(),
+      `+${c.additions}`,
+      `-${c.deletions}`,
+      formatDate(c.lastCommitAt)
+    ]);
+    drawTable(headers, rows, colWidths);
   }
 
   // 4. Commit Activity Summary
-  drawSectionHeader('Recent Commit Activity (Max 10)');
+  drawSectionHeader('Recent Commit Activity (Max 20)');
   if (data.recentCommits.length === 0) {
     doc.fillColor('#6b7280').font('Helvetica-Oblique').fontSize(10).text('No commit activity available.', 50, doc.y);
     doc.moveDown(1.5);
   } else {
     checkPageOverflow(60);
-    let tableY = doc.y;
-
-    // Draw Header
-    doc.rect(50, tableY, 495, 20).fill('#f1f5f9');
-    doc.fillColor('#334155').font('Helvetica-Bold').fontSize(9);
-    doc.text('Commit Message', 55, tableY + 5, { width: 220, ellipsis: true });
-    doc.text('Author', 280, tableY + 5, { width: 80, ellipsis: true });
-    doc.text('Changes', 365, tableY + 5, { width: 70, align: 'right' });
-    doc.text('Committed Date', 440, tableY + 5, { width: 100, align: 'right' });
-
-    tableY += 20;
-
-    for (let index = 0; index < data.recentCommits.length; index++) {
-      const commit = data.recentCommits[index];
-      const beforeY = doc.y;
-      checkPageOverflow(25);
-      if (doc.y < beforeY) {
-        tableY = doc.y;
-      }
-
-      if (index % 2 === 1) {
-        doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      }
-
-      const msgClean = (commit.message || '').split('\n')[0].substring(0, 45);
-
-      doc.fillColor('#1f2937').font('Helvetica').fontSize(9);
-      doc.text(msgClean, 55, tableY + 5, { width: 220, ellipsis: true });
-      doc.text(commit.author?.login || commit.author?.name || 'Unknown', 280, tableY + 5, { width: 80, ellipsis: true });
-      doc.text(`+${commit.additions || 0}/-${commit.deletions || 0}`, 365, tableY + 5, { width: 70, align: 'right' });
-      doc.text(formatDate(commit.committedAt), 440, tableY + 5, { width: 100, align: 'right' });
-
-      tableY += 20;
-      doc.y = tableY;
-    }
-    doc.moveDown(1.5);
+    const headers = [
+      { label: 'Commit Message' }, { label: 'Author' },
+      { label: 'Changes', align: 'right' }, { label: 'Committed Date', align: 'right' }
+    ];
+    const colWidths = [220, 85, 80, 100];
+    const rows = data.recentCommits.map(c => [
+      (c.message || '').split('\n')[0],
+      c.author?.login || c.author?.name || 'Unknown',
+      `+${c.additions || 0}/-${c.deletions || 0}`,
+      formatDate(c.committedAt)
+    ]);
+    drawTable(headers, rows, colWidths);
   }
 
   // 5. Pull Request Summary
@@ -442,48 +428,23 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     checkPageOverflow(60);
-    let tableY = doc.y;
-
-    // Draw Header
-    doc.rect(50, tableY, 495, 20).fill('#f1f5f9');
-    doc.fillColor('#334155').font('Helvetica-Bold').fontSize(9);
-    doc.text('PR #', 55, tableY + 5, { width: 35 });
-    doc.text('Title', 95, tableY + 5, { width: 200, ellipsis: true });
-    doc.text('State', 300, tableY + 5, { width: 60 });
-    doc.text('Created', 365, tableY + 5, { width: 85, align: 'right' });
-    doc.text('Merged', 455, tableY + 5, { width: 85, align: 'right' });
-
-    tableY += 20;
-
-    for (let index = 0; index < data.recentPRs.length; index++) {
-      const pr = data.recentPRs[index];
-      const beforeY = doc.y;
-      checkPageOverflow(25);
-      if (doc.y < beforeY) {
-        tableY = doc.y;
-      }
-
-      if (index % 2 === 1) {
-        doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      }
-
-      const titleClean = (pr.title || '').substring(0, 42);
+    const headers = [
+      { label: 'PR #' }, { label: 'Title' }, { label: 'State' },
+      { label: 'Created', align: 'right' }, { label: 'Merged', align: 'right' }
+    ];
+    const colWidths = [40, 200, 60, 90, 90];
+    const rows = data.recentPRs.map(pr => {
       let stateLabel = pr.state || 'closed';
-      if (pr.merged) {
-        stateLabel = 'merged';
-      }
-
-      doc.fillColor('#1f2937').font('Helvetica').fontSize(9);
-      doc.text(`#${pr.number}`, 55, tableY + 5, { width: 35 });
-      doc.text(titleClean, 95, tableY + 5, { width: 200, ellipsis: true });
-      doc.text(stateLabel.toUpperCase(), 300, tableY + 5, { width: 60 });
-      doc.text(formatDate(pr.githubCreatedAt), 365, tableY + 5, { width: 85, align: 'right' });
-      doc.text(formatDate(pr.mergedAt), 455, tableY + 5, { width: 85, align: 'right' });
-
-      tableY += 20;
-      doc.y = tableY;
-    }
-    doc.moveDown(1.5);
+      if (pr.merged) stateLabel = 'merged';
+      return [
+        `#${pr.number}`,
+        pr.title || '',
+        stateLabel.toUpperCase(),
+        formatDate(pr.githubCreatedAt),
+        formatDate(pr.mergedAt)
+      ];
+    });
+    drawTable(headers, rows, colWidths);
   }
 
   // 6. Issue Summary
@@ -493,44 +454,19 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     checkPageOverflow(60);
-    let tableY = doc.y;
-
-    // Draw Header
-    doc.rect(50, tableY, 495, 20).fill('#f1f5f9');
-    doc.fillColor('#334155').font('Helvetica-Bold').fontSize(9);
-    doc.text('Issue #', 55, tableY + 5, { width: 45 });
-    doc.text('Title', 105, tableY + 5, { width: 240, ellipsis: true });
-    doc.text('State', 350, tableY + 5, { width: 50 });
-    doc.text('Created', 405, tableY + 5, { width: 65, align: 'right' });
-    doc.text('Closed', 475, tableY + 5, { width: 65, align: 'right' });
-
-    tableY += 20;
-
-    for (let index = 0; index < data.recentIssues.length; index++) {
-      const issue = data.recentIssues[index];
-      const beforeY = doc.y;
-      checkPageOverflow(25);
-      if (doc.y < beforeY) {
-        tableY = doc.y;
-      }
-
-      if (index % 2 === 1) {
-        doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      }
-
-      const titleClean = (issue.title || '').substring(0, 50);
-
-      doc.fillColor('#1f2937').font('Helvetica').fontSize(9);
-      doc.text(`#${issue.number}`, 55, tableY + 5, { width: 45 });
-      doc.text(titleClean, 105, tableY + 5, { width: 240, ellipsis: true });
-      doc.text((issue.state || 'open').toUpperCase(), 350, tableY + 5, { width: 50 });
-      doc.text(formatDate(issue.githubCreatedAt), 405, tableY + 5, { width: 65, align: 'right' });
-      doc.text(formatDate(issue.closedAt), 475, tableY + 5, { width: 65, align: 'right' });
-
-      tableY += 20;
-      doc.y = tableY;
-    }
-    doc.moveDown(1.5);
+    const headers = [
+      { label: 'Issue #' }, { label: 'Title' }, { label: 'State' },
+      { label: 'Created', align: 'right' }, { label: 'Closed', align: 'right' }
+    ];
+    const colWidths = [50, 230, 50, 75, 75];
+    const rows = data.recentIssues.map(issue => [
+      `#${issue.number}`,
+      issue.title || '',
+      (issue.state || 'open').toUpperCase(),
+      formatDate(issue.githubCreatedAt),
+      formatDate(issue.closedAt)
+    ]);
+    drawTable(headers, rows, colWidths);
   }
 
   // 7. AI Sprint Summary
@@ -541,13 +477,12 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     const { summary, velocity, highlights, concerns, sprintScore } = sprintSummaryInsight.parsedData;
-
     checkPageOverflow(60);
     const boxY = doc.y;
-    doc.rect(50, boxY, 495, 45).fill('#eff6ff');
-    doc.strokeColor('#bfdbfe').lineWidth(1).rect(50, boxY, 495, 45).stroke();
+    doc.rect(50, boxY, 495, 45).fill('#f8f8f8');
+    doc.strokeColor('#7c3aed').lineWidth(1).rect(50, boxY, 495, 45).stroke();
 
-    doc.fillColor('#1e40af')
+    doc.fillColor('#7c3aed')
        .font('Helvetica-Bold')
        .fontSize(10)
        .text(`Sprint Score: ${sprintScore || 'N/A'}/10`, 65, boxY + 15)
@@ -557,29 +492,29 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1);
 
     checkPageOverflow(80);
-    doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Executive Summary', 50, doc.y);
+    doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Executive Summary', 50, doc.y);
     doc.moveDown(0.3);
-    doc.font('Helvetica').fontSize(9.5).fillColor('#374151').text(summary || 'No summary details provided.', 50, doc.y, { width: 495, lineGap: 2 });
+    doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(summary || 'No summary details provided.', 50, doc.y, { width: 495, lineGap: 2 });
     doc.moveDown(1);
 
     if (highlights && highlights.length > 0) {
       checkPageOverflow(50);
-      doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Key Highlights', 50, doc.y);
+      doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Key Highlights', 50, doc.y);
       doc.moveDown(0.4);
       highlights.forEach(h => {
         checkPageOverflow(15);
-        doc.font('Helvetica').fontSize(9).fillColor('#374151').text(`• ${h}`, 60, doc.y);
+        doc.font('Helvetica').fontSize(9).fillColor('#4b5563').text(`• ${h}`, 60, doc.y);
       });
       doc.moveDown(1);
     }
 
     if (concerns && concerns.length > 0) {
       checkPageOverflow(50);
-      doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Areas of Concern', 50, doc.y);
+      doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Areas of Concern', 50, doc.y);
       doc.moveDown(0.4);
       concerns.forEach(c => {
         checkPageOverflow(15);
-        doc.font('Helvetica').fontSize(9).fillColor('#374151').text(`• ${c}`, 60, doc.y);
+        doc.font('Helvetica').fontSize(9).fillColor('#4b5563').text(`• ${c}`, 60, doc.y);
       });
       doc.moveDown(1.5);
     }
@@ -593,13 +528,12 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     const { bottlenecks, riskLevel, topRecommendation } = bottleneckInsight.parsedData;
-
     checkPageOverflow(45);
     const boxY = doc.y;
-    doc.rect(50, boxY, 495, 40).fill(riskLevel === 'high' ? '#fef2f2' : riskLevel === 'medium' ? '#fffbeb' : '#f0fdf4');
-    doc.strokeColor(riskLevel === 'high' ? '#fecaca' : riskLevel === 'medium' ? '#fef3c7' : '#bbf7d0').lineWidth(1).rect(50, boxY, 495, 40).stroke();
+    doc.rect(50, boxY, 495, 40).fill('#f8f8f8');
+    doc.strokeColor(riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#10b981').lineWidth(1).rect(50, boxY, 495, 40).stroke();
 
-    doc.fillColor(riskLevel === 'high' ? '#991b1b' : riskLevel === 'medium' ? '#92400e' : '#166534')
+    doc.fillColor(riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#10b981')
        .font('Helvetica-Bold')
        .fontSize(10)
        .text(`Overall Risk Level: ${(riskLevel || 'low').toUpperCase()}`, 65, boxY + 15);
@@ -609,55 +543,26 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
 
     if (topRecommendation) {
       checkPageOverflow(50);
-      doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Top Recommendation', 50, doc.y);
+      doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Top Recommendation', 50, doc.y);
       doc.moveDown(0.3);
-      doc.font('Helvetica').fontSize(9.5).fillColor('#374151').text(topRecommendation, 50, doc.y, { width: 495, lineGap: 2 });
+      doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(topRecommendation, 50, doc.y, { width: 495, lineGap: 2 });
       doc.moveDown(1);
     }
 
     if (bottlenecks && bottlenecks.length > 0) {
       checkPageOverflow(80);
-      doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Detected Bottlenecks', 50, doc.y);
+      doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Detected Bottlenecks', 50, doc.y);
       doc.moveDown(0.5);
 
-      let tableY = doc.y;
-      doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      doc.fillColor('#334155').font('Helvetica-Bold').fontSize(8.5);
-      doc.text('Type', 55, tableY + 5, { width: 100 });
-      doc.text('Severity', 160, tableY + 5, { width: 50 });
-      doc.text('Description', 215, tableY + 5, { width: 140 });
-      doc.text('Suggestion', 360, tableY + 5, { width: 180 });
-
-      tableY += 20;
-      doc.y = tableY;
-
-      bottlenecks.forEach((b, index) => {
-        const beforeY = doc.y;
-        checkPageOverflow(40);
-        if (doc.y < beforeY) {
-          tableY = doc.y;
-        }
-        if (index % 2 === 1) {
-          doc.rect(50, tableY, 495, 30).fill('#fafafa');
-        }
-
-        doc.fillColor('#1f2937').font('Helvetica').fontSize(8.5);
-        doc.text(b.type || 'N/A', 55, tableY + 5, { width: 100, ellipsis: true });
-
-        const sev = (b.severity || 'low').toLowerCase();
-        doc.fillColor(sev === 'high' ? '#ef4444' : sev === 'medium' ? '#f59e0b' : '#10b981')
-           .font('Helvetica-Bold')
-           .text(sev.toUpperCase(), 160, tableY + 5, { width: 50 });
-
-        doc.fillColor('#374151')
-           .font('Helvetica')
-           .text(b.description || 'N/A', 215, tableY + 5, { width: 140, height: 22, ellipsis: true })
-           .text(b.suggestion || 'N/A', 360, tableY + 5, { width: 180, height: 22, ellipsis: true });
-
-        tableY += 30;
-        doc.y = tableY;
-      });
-      doc.moveDown(1.5);
+      const headers = [{ label: 'Type' }, { label: 'Severity' }, { label: 'Description' }, { label: 'Suggestion' }];
+      const colWidths = [100, 60, 140, 180];
+      const rows = bottlenecks.map(b => [
+        b.type || 'N/A',
+        (b.severity || 'low').toUpperCase(),
+        b.description || 'N/A',
+        b.suggestion || 'N/A'
+      ]);
+      drawTable(headers, rows, colWidths);
     }
   }
 
@@ -669,14 +574,13 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     const { recommendations: recsList, nextBestAction } = recommendationsInsight.parsedData;
-
     if (nextBestAction) {
       checkPageOverflow(45);
       const boxY = doc.y;
-      doc.rect(50, boxY, 495, 40).fill('#f0fdf4');
-      doc.strokeColor('#bbf7d0').lineWidth(1).rect(50, boxY, 495, 40).stroke();
+      doc.rect(50, boxY, 495, 40).fill('#f8f8f8');
+      doc.strokeColor('#10b981').lineWidth(1).rect(50, boxY, 495, 40).stroke();
 
-      doc.fillColor('#166534')
+      doc.fillColor('#10b981')
          .font('Helvetica-Bold')
          .fontSize(9.5)
          .text(`Next Best Action: ${nextBestAction}`, 65, boxY + 15, { width: 460 });
@@ -687,48 +591,18 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
 
     if (recsList && recsList.length > 0) {
       checkPageOverflow(50);
-      doc.fillColor('#1f2937').font('Helvetica-Bold').fontSize(10).text('Prioritized Recommendations', 50, doc.y);
+      doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Prioritized Recommendations', 50, doc.y);
       doc.moveDown(0.5);
 
-      let tableY = doc.y;
-      doc.rect(50, tableY, 495, 20).fill('#f8fafc');
-      doc.fillColor('#334155').font('Helvetica-Bold').fontSize(8.5);
-      doc.text('Priority', 55, tableY + 5, { width: 50 });
-      doc.text('Recommendation', 110, tableY + 5, { width: 130 });
-      doc.text('Reason', 245, tableY + 5, { width: 120 });
-      doc.text('Immediate Action', 370, tableY + 5, { width: 170 });
-
-      tableY += 20;
-      doc.y = tableY;
-
-      recsList.forEach((r, index) => {
-        const beforeY = doc.y;
-        checkPageOverflow(45);
-        if (doc.y < beforeY) {
-          tableY = doc.y;
-        }
-        if (index % 2 === 1) {
-          doc.rect(50, tableY, 495, 40).fill('#fafafa');
-        }
-
-        const prio = (r.priority || 'low').toLowerCase();
-        doc.fillColor(prio === 'high' ? '#ef4444' : prio === 'medium' ? '#f59e0b' : '#10b981')
-           .font('Helvetica-Bold')
-           .fontSize(8.5)
-           .text(prio.toUpperCase(), 55, tableY + 5, { width: 50 });
-
-        doc.fillColor('#1f2937')
-           .font('Helvetica-Bold')
-           .text(r.title || 'N/A', 110, tableY + 5, { width: 130, height: 30, ellipsis: true });
-
-        doc.fillColor('#374151')
-           .font('Helvetica')
-           .text(r.reason || 'N/A', 245, tableY + 5, { width: 120, height: 30, ellipsis: true })
-           .text(r.action || 'N/A', 370, tableY + 5, { width: 170, height: 30, ellipsis: true });
-
-        tableY += 40;
-        doc.y = tableY;
-      });
+      const headers = [{ label: 'Priority' }, { label: 'Recommendation' }, { label: 'Reason' }, { label: 'Action' }];
+      const colWidths = [50, 130, 130, 170];
+      const rows = recsList.map(r => [
+        (r.priority || 'low').toUpperCase(),
+        r.title || 'N/A',
+        r.reason || 'N/A',
+        r.action || 'N/A'
+      ]);
+      drawTable(headers, rows, colWidths);
     }
   }
 
@@ -736,15 +610,11 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
   const range = doc.bufferedPageRange();
   for (let i = 0; i < range.count; i++) {
     doc.switchToPage(i);
-
-    // Skip cover page footer
     if (i > 0) {
       doc.strokeColor('#e5e7eb').lineWidth(0.5).moveTo(50, 780).lineTo(545, 780).stroke();
-
       doc.fillColor('#6b7280')
          .font('Helvetica')
          .fontSize(8);
-
       doc.text('Generated by DevTrackr', 50, 788);
       doc.text(`Page ${i + 1} of ${range.count}`, 50, 788, { align: 'right', width: 495 });
     }

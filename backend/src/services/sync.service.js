@@ -85,6 +85,16 @@ export const syncRepository = async (userId, repoFullName) => {
     }
   };
 
+  const listAll = async (endpoint, params) => {
+    if (typeof octokit.paginate === 'function') {
+      return await octokit.paginate(endpoint, params);
+    }
+
+    const response = await endpoint(params);
+    updateRateLimit(response);
+    return response.data || [];
+  };
+
   // 5. Fetch repository metadata
   let githubRepo;
   try {
@@ -174,15 +184,12 @@ export const syncRepository = async (userId, repoFullName) => {
   // 9. Fetch and save pull requests
   let prsSyncedCount = 0;
   try {
-    const pullsResponse = await octokit.rest.pulls.list({
+    const rawPRs = await listAll(octokit.rest.pulls.list, {
       owner,
       repo,
       state: 'all',
-      per_page: 30
+      per_page: 100
     });
-    updateRateLimit(pullsResponse);
-
-    const rawPRs = pullsResponse.data || [];
     const prOps = [];
 
     for (const rawPR of rawPRs) {
@@ -208,15 +215,12 @@ export const syncRepository = async (userId, repoFullName) => {
   // 10. Fetch and save issues (excluding Pull Requests)
   let issuesSyncedCount = 0;
   try {
-    const issuesResponse = await octokit.rest.issues.listForRepo({
+    const rawIssues = await listAll(octokit.rest.issues.listForRepo, {
       owner,
       repo,
       state: 'all',
-      per_page: 30
+      per_page: 100
     });
-    updateRateLimit(issuesResponse);
-
-    const rawIssues = issuesResponse.data || [];
     const issueOps = [];
 
     for (const rawIssue of rawIssues) {
