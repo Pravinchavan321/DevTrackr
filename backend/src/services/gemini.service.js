@@ -14,6 +14,8 @@ const geminiDailyQuotaCooldownMs = 24 * 60 * 60 * 1000;
 const geminiRateLimitCooldownMs = 60 * 1000;
 const rateLimitedKeyCooldowns = new Map();
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const getGeminiErrorMessage = (error) => {
   const message = String(error?.message || '');
   const lowerMessage = message.toLowerCase();
@@ -91,6 +93,38 @@ const isKeyCoolingDown = (clientIndex) => {
   return true;
 };
 
+const getNetworkRetryDelayMs = () => {
+  const retryDelayMs = Number.parseInt(process.env.GEMINI_NETWORK_RETRY_DELAY_MS || '750', 10);
+  return Number.isFinite(retryDelayMs) && retryDelayMs > 0 ? retryDelayMs : 0;
+};
+
+const generateContentWithNetworkRetry = async (model, prompt, requestOptions, context) => {
+  const maxAttempts = 2;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await model.generateContent(prompt, requestOptions);
+    } catch (error) {
+      if (!isNetworkError(error) || attempt === maxAttempts) {
+        throw error;
+      }
+
+      logger.warn('Gemini network request failed, retrying once', {
+        ...context,
+        attempt,
+        error: error.message
+      });
+
+      const retryDelayMs = getNetworkRetryDelayMs();
+      if (retryDelayMs > 0) {
+        await sleep(retryDelayMs);
+      }
+    }
+  }
+
+  throw new Error('Gemini network request failed');
+};
+
 const callGeminiWithRetry = async (prompt) => {
   const clients = getGeminiClients();
   if (!clients.length) {
@@ -102,7 +136,7 @@ const callGeminiWithRetry = async (prompt) => {
   }
   
   const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const timeoutMs = Number.parseInt(process.env.GEMINI_TIMEOUT_MS || '8000', 10);
+  const timeoutMs = Number.parseInt(process.env.GEMINI_TIMEOUT_MS || '20000', 10);
   const requestOptions = Number.isFinite(timeoutMs) && timeoutMs > 0 ? { timeout: timeoutMs } : undefined;
 
   const cleanAndParse = (text) => {
@@ -116,6 +150,7 @@ const callGeminiWithRetry = async (prompt) => {
 
   let lastErrorMessage = defaultGeminiErrorMessage;
   let sawRateLimit = false;
+  let sawNetworkError = false;
   let availableKeyCount = 0;
 
   for (const [clientIndex, client] of clients.entries()) {
@@ -127,9 +162,13 @@ const callGeminiWithRetry = async (prompt) => {
     availableKeyCount += 1;
     const model = client.getGenerativeModel({ model: modelName });
     let responseText = '';
+    const requestContext = {
+      keyIndex: clientIndex + 1,
+      totalKeys: clients.length
+    };
 
     try {
-      const result = await model.generateContent(prompt, requestOptions);
+      const result = await generateContentWithNetworkRetry(model, prompt, requestOptions, requestContext);
       responseText = result.response.text();
       return cleanAndParse(responseText);
     } catch (error) {
@@ -148,25 +187,22 @@ const callGeminiWithRetry = async (prompt) => {
       }
 
       if (isNetworkError(error)) {
-        logger.error('Gemini network request failed without retrying', {
-          keyIndex: clientIndex + 1,
-          totalKeys: clients.length,
+        sawNetworkError = true;
+        lastErrorMessage = geminiNetworkErrorMessage;
+        logger.error('Gemini network request failed after retry, trying fallback key if available', {
+          ...requestContext,
           error: error.message
         });
-        return {
-          _aiError: true,
-          _aiErrorMessage: geminiNetworkErrorMessage
-        };
+        continue;
       }
 
       logger.error('Gemini API call or parse failed, retrying once...', {
-        keyIndex: clientIndex + 1,
-        totalKeys: clients.length,
+        ...requestContext,
         error: error.message
       });
 
       try {
-        const result = await model.generateContent(prompt, requestOptions);
+        const result = await generateContentWithNetworkRetry(model, prompt, requestOptions, requestContext);
         responseText = result.response.text();
         return cleanAndParse(responseText);
       } catch (retryError) {
@@ -185,20 +221,17 @@ const callGeminiWithRetry = async (prompt) => {
         }
 
         if (isNetworkError(retryError)) {
-          logger.error('Gemini network request failed on retry', {
-            keyIndex: clientIndex + 1,
-            totalKeys: clients.length,
+          sawNetworkError = true;
+          lastErrorMessage = geminiNetworkErrorMessage;
+          logger.error('Gemini network request failed on retry, trying fallback key if available', {
+            ...requestContext,
             error: retryError.message
           });
-          return {
-            _aiError: true,
-            _aiErrorMessage: geminiNetworkErrorMessage
-          };
+          continue;
         }
 
         logger.error('Gemini API call or parse failed on retry', {
-          keyIndex: clientIndex + 1,
-          totalKeys: clients.length,
+          ...requestContext,
           error: retryError.message
         });
 
@@ -218,7 +251,7 @@ const callGeminiWithRetry = async (prompt) => {
 
   return {
     _aiError: true,
-    _aiErrorMessage: sawRateLimit ? allGeminiKeysExhaustedMessage : lastErrorMessage
+    _aiErrorMessage: sawRateLimit && !sawNetworkError ? allGeminiKeysExhaustedMessage : lastErrorMessage
   };
 };
 

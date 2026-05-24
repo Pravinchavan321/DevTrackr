@@ -20,6 +20,7 @@ jest.unstable_mockModule('@google/generative-ai', () => {
 process.env.NODE_ENV = 'test';
 process.env.GEMINI_API_KEY = 'test-gemini-key';
 process.env.GEMINI_MODEL = 'gemini-1.5-flash';
+process.env.GEMINI_NETWORK_RETRY_DELAY_MS = '0';
 
 import request from 'supertest';
 import mongoose from 'mongoose';
@@ -475,6 +476,33 @@ describe('Gemini AI Integration Endpoints', () => {
         .mockResolvedValueOnce({
           response: { text: () => 'Invalid JSON string that causes parser error' }
         })
+        .mockResolvedValueOnce({
+          response: { text: () => JSON.stringify(validResponse) }
+        });
+
+      const res = await request(app)
+        .post(`/api/ai/repos/${repoA._id}/summarize`)
+        .set('Authorization', `Bearer ${tokenA}`)
+        .send({ from: '2026-05-19', to: '2026-05-23' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.parsedData.summary).toBe(validResponse.summary);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('should retry transient Gemini network failures before returning fallback data', async () => {
+      await populateRepoData(repoA._id);
+
+      const validResponse = {
+        summary: 'Recovered after a transient network retry.',
+        velocity: 'medium',
+        highlights: ['Retry recovered'],
+        concerns: [],
+        sprintScore: 7
+      };
+
+      mockGenerateContent
+        .mockRejectedValueOnce(new Error('fetch failed'))
         .mockResolvedValueOnce({
           response: { text: () => JSON.stringify(validResponse) }
         });

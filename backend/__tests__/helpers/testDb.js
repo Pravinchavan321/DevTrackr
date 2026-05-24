@@ -8,7 +8,11 @@ let mongod = null;
 
 export const connectTestDb = async () => {
   try {
-    mongod = await MongoMemoryServer.create();
+    mongod = await MongoMemoryServer.create({
+      instance: {
+        launchTimeout: 30000,
+      },
+    });
     const mongoUri = mongod.getUri();
 
     await mongoose.connect(mongoUri);

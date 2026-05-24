@@ -13,6 +13,11 @@ import logger from './config/logger.js';
 
 const app = express();
 
+if (process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.TRUST_PROXY_HOPS) {
+  const trustProxyHops = Number.parseInt(process.env.TRUST_PROXY_HOPS || '1', 10);
+  app.set('trust proxy', Number.isFinite(trustProxyHops) && trustProxyHops > 0 ? trustProxyHops : 1);
+}
+
 const normalizeOrigin = (value) => {
   if (!value) {
     return null;

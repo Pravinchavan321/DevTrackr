@@ -292,20 +292,36 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
 
   doc.addPage();
 
+  const pageBottomY = 730;
+  const contentWidth = 495;
+
+  const sanitizePdfText = (value, maxLength = 900) => {
+    const text = String(value ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    return `${text.slice(0, Math.max(0, maxLength - 3))}...`;
+  };
+
   const checkPageOverflow = (neededHeight) => {
-    if (doc.y + neededHeight > 730) {
+    if (doc.y + neededHeight > pageBottomY) {
       doc.addPage();
     }
   };
 
   const drawSectionHeader = (title) => {
     checkPageOverflow(50);
-    doc.rect(50, doc.y, 495, 24).fill('#4c1d95');
+    const headerY = doc.y;
+    doc.rect(50, headerY, contentWidth, 24).fill('#4c1d95');
     doc.fillColor('#ffffff')
        .font('Helvetica-Bold')
        .fontSize(12)
-       .text(title, 65, doc.y + 6);
-    doc.moveDown(1.5);
+       .text(title, 65, headerY + 6, { width: contentWidth - 30 });
+    doc.y = headerY + 36;
   };
 
   // 2. Stats Summary
@@ -344,34 +360,59 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
   doc.moveDown(1.5);
 
   // Helper for rendering tables
-  const drawTable = (headers, rows, colWidths, startX = 50) => {
-    let tableY = doc.y;
-    doc.rect(startX, tableY, 495, 20).fill('#e5e7eb');
+  const drawTableHeader = (headers, colWidths, startX, tableY) => {
+    const tableWidth = Math.min(contentWidth, colWidths.reduce((sum, width) => sum + width, 0) + 10);
+    doc.rect(startX, tableY, tableWidth, 22).fill('#e5e7eb');
     doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(9);
-    
+
     let currentX = startX + 5;
     headers.forEach((h, i) => {
-      doc.text(h.label, currentX, tableY + 5, { width: colWidths[i], align: h.align || 'left' });
+      doc.text(h.label, currentX, tableY + 6, { width: colWidths[i], align: h.align || 'left' });
       currentX += colWidths[i];
     });
 
-    tableY += 20;
+    return tableY + 22;
+  };
+
+  const drawTable = (headers, rows, colWidths, startX = 50) => {
+    checkPageOverflow(50);
+    let tableY = drawTableHeader(headers, colWidths, startX, doc.y);
 
     rows.forEach((row, rowIndex) => {
-      const beforeY = doc.y;
-      checkPageOverflow(25);
-      if (doc.y < beforeY) tableY = doc.y;
+      const normalizedRow = row.map((cell, i) =>
+        sanitizePdfText(cell, headers[i]?.maxLength || 420)
+      );
 
-      doc.rect(startX, tableY, 495, 20).fill(rowIndex % 2 === 0 ? '#f5f5fa' : '#ffffff');
+      doc.font('Helvetica').fontSize(8.5);
+      const cellHeights = normalizedRow.map((cell, i) =>
+        doc.heightOfString(cell || ' ', {
+          width: colWidths[i],
+          align: headers[i].align || 'left',
+          lineGap: 1
+        })
+      );
+      const rowHeight = Math.max(24, Math.ceil(Math.max(...cellHeights) + 12));
+
+      if (tableY + rowHeight > pageBottomY) {
+        doc.addPage();
+        tableY = drawTableHeader(headers, colWidths, startX, doc.y);
+      }
+
+      const tableWidth = Math.min(contentWidth, colWidths.reduce((sum, width) => sum + width, 0) + 10);
+      doc.rect(startX, tableY, tableWidth, rowHeight).fill(rowIndex % 2 === 0 ? '#f5f5fa' : '#ffffff');
       
-      doc.fillColor('#1f1f1f').font('Helvetica').fontSize(9);
-      currentX = startX + 5;
-      row.forEach((cell, i) => {
-        doc.text(cell || '', currentX, tableY + 5, { width: colWidths[i], align: headers[i].align || 'left', ellipsis: true });
+      doc.fillColor('#1f1f1f').font('Helvetica').fontSize(8.5);
+      let currentX = startX + 5;
+      normalizedRow.forEach((cell, i) => {
+        doc.text(cell || '', currentX, tableY + 6, {
+          width: colWidths[i],
+          align: headers[i].align || 'left',
+          lineGap: 1
+        });
         currentX += colWidths[i];
       });
 
-      tableY += 20;
+      tableY += rowHeight;
       doc.y = tableY;
     });
     doc.moveDown(1.5);
@@ -477,24 +518,39 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     doc.moveDown(1.5);
   } else {
     const { summary, velocity, highlights, concerns, sprintScore } = sprintSummaryInsight.parsedData;
-    checkPageOverflow(60);
+    const scoreText = `${sprintScore || 'N/A'}/10`;
+    const velocityText = sanitizePdfText(String(velocity || 'unknown').toUpperCase(), 220);
+    doc.font('Helvetica-Bold').fontSize(10);
+    const scoreHeight = doc.heightOfString(scoreText, { width: 190, lineGap: 1 });
+    const velocityHeight = doc.heightOfString(velocityText, { width: 225, lineGap: 1 });
+    const boxHeight = Math.max(52, Math.ceil(Math.max(scoreHeight, velocityHeight) + 30));
+
+    checkPageOverflow(boxHeight + 20);
     const boxY = doc.y;
-    doc.rect(50, boxY, 495, 45).fill('#f8f8f8');
-    doc.strokeColor('#7c3aed').lineWidth(1).rect(50, boxY, 495, 45).stroke();
+    doc.rect(50, boxY, contentWidth, boxHeight).fill('#f8f8f8');
+    doc.strokeColor('#7c3aed').lineWidth(1).rect(50, boxY, contentWidth, boxHeight).stroke();
 
     doc.fillColor('#7c3aed')
        .font('Helvetica-Bold')
        .fontSize(10)
-       .text(`Sprint Score: ${sprintScore || 'N/A'}/10`, 65, boxY + 15)
-       .text(`Velocity: ${(velocity || '').toUpperCase()}`, 300, boxY + 15);
+       .text('Sprint Score', 65, boxY + 10, { width: 190 })
+       .text('Velocity', 300, boxY + 10, { width: 225 })
+       .fontSize(9.5)
+       .text(scoreText, 65, boxY + 27, { width: 190, lineGap: 1 })
+       .text(velocityText, 300, boxY + 27, { width: 225, lineGap: 1 });
 
-    doc.y = boxY + 45;
+    doc.y = boxY + boxHeight;
     doc.moveDown(1);
 
     checkPageOverflow(80);
     doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Executive Summary', 50, doc.y);
     doc.moveDown(0.3);
-    doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(summary || 'No summary details provided.', 50, doc.y, { width: 495, lineGap: 2 });
+    doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(
+      sanitizePdfText(summary || 'No summary details provided.', 1200),
+      50,
+      doc.y,
+      { width: contentWidth, lineGap: 2 }
+    );
     doc.moveDown(1);
 
     if (highlights && highlights.length > 0) {
@@ -502,8 +558,11 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
       doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Key Highlights', 50, doc.y);
       doc.moveDown(0.4);
       highlights.forEach(h => {
-        checkPageOverflow(15);
-        doc.font('Helvetica').fontSize(9).fillColor('#4b5563').text(`• ${h}`, 60, doc.y);
+        const bulletText = `- ${sanitizePdfText(h, 500)}`;
+        doc.font('Helvetica').fontSize(9);
+        checkPageOverflow(doc.heightOfString(bulletText, { width: 475, lineGap: 2 }) + 6);
+        doc.fillColor('#4b5563').text(bulletText, 60, doc.y, { width: 475, lineGap: 2 });
+        doc.moveDown(0.2);
       });
       doc.moveDown(1);
     }
@@ -513,8 +572,11 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
       doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Areas of Concern', 50, doc.y);
       doc.moveDown(0.4);
       concerns.forEach(c => {
-        checkPageOverflow(15);
-        doc.font('Helvetica').fontSize(9).fillColor('#4b5563').text(`• ${c}`, 60, doc.y);
+        const bulletText = `- ${sanitizePdfText(c, 500)}`;
+        doc.font('Helvetica').fontSize(9);
+        checkPageOverflow(doc.heightOfString(bulletText, { width: 475, lineGap: 2 }) + 6);
+        doc.fillColor('#4b5563').text(bulletText, 60, doc.y, { width: 475, lineGap: 2 });
+        doc.moveDown(0.2);
       });
       doc.moveDown(1.5);
     }
@@ -530,8 +592,8 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
     const { bottlenecks, riskLevel, topRecommendation } = bottleneckInsight.parsedData;
     checkPageOverflow(45);
     const boxY = doc.y;
-    doc.rect(50, boxY, 495, 40).fill('#f8f8f8');
-    doc.strokeColor(riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#10b981').lineWidth(1).rect(50, boxY, 495, 40).stroke();
+    doc.rect(50, boxY, contentWidth, 40).fill('#f8f8f8');
+    doc.strokeColor(riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#10b981').lineWidth(1).rect(50, boxY, contentWidth, 40).stroke();
 
     doc.fillColor(riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#10b981')
        .font('Helvetica-Bold')
@@ -545,7 +607,12 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
       checkPageOverflow(50);
       doc.fillColor('#1f1f1f').font('Helvetica-Bold').fontSize(10).text('Top Recommendation', 50, doc.y);
       doc.moveDown(0.3);
-      doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(topRecommendation, 50, doc.y, { width: 495, lineGap: 2 });
+      doc.font('Helvetica').fontSize(9.5).fillColor('#4b5563').text(
+        sanitizePdfText(topRecommendation, 1000),
+        50,
+        doc.y,
+        { width: contentWidth, lineGap: 2 }
+      );
       doc.moveDown(1);
     }
 
@@ -575,17 +642,22 @@ export const generateRepositoryPdfReport = async (repoId, userId, writableStream
   } else {
     const { recommendations: recsList, nextBestAction } = recommendationsInsight.parsedData;
     if (nextBestAction) {
-      checkPageOverflow(45);
+      const actionText = `Next Best Action: ${sanitizePdfText(nextBestAction, 800)}`;
+      doc.font('Helvetica-Bold').fontSize(9.5);
+      const actionHeight = doc.heightOfString(actionText, { width: 460, lineGap: 2 });
+      const boxHeight = Math.max(44, Math.ceil(actionHeight + 24));
+
+      checkPageOverflow(boxHeight + 14);
       const boxY = doc.y;
-      doc.rect(50, boxY, 495, 40).fill('#f8f8f8');
-      doc.strokeColor('#10b981').lineWidth(1).rect(50, boxY, 495, 40).stroke();
+      doc.rect(50, boxY, contentWidth, boxHeight).fill('#f8f8f8');
+      doc.strokeColor('#10b981').lineWidth(1).rect(50, boxY, contentWidth, boxHeight).stroke();
 
       doc.fillColor('#10b981')
          .font('Helvetica-Bold')
          .fontSize(9.5)
-         .text(`Next Best Action: ${nextBestAction}`, 65, boxY + 15, { width: 460 });
+         .text(actionText, 65, boxY + 12, { width: 460, lineGap: 2 });
 
-      doc.y = boxY + 40;
+      doc.y = boxY + boxHeight;
       doc.moveDown(1);
     }
 

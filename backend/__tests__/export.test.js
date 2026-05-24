@@ -370,6 +370,53 @@ describe('PDF Export API', () => {
       expect(res.body.length).toBeGreaterThan(0);
       expect(res.body.slice(0, 4).toString()).toBe('%PDF');
     });
+
+    test('PDF export handles long AI and commit text without generation errors', async () => {
+      await populateFullData();
+
+      await Commit.create({
+        repoId: repoA._id,
+        sha: 'long_text_sha_abcdef1234567890',
+        message: 'feat: add a very long generated report row that should wrap cleanly in the PDF table without colliding with the following author or date cells',
+        author: {
+          login: 'pravin',
+          name: 'Pravin',
+          email: 'pravin@test.com'
+        },
+        additions: 158,
+        deletions: 48,
+        filesChanged: 7,
+        committedAt: new Date('2026-05-24T10:00:00Z')
+      });
+
+      await AIInsight.findOneAndUpdate(
+        { repoId: repoA._id, type: 'sprint_summary' },
+        {
+          parsedData: {
+            summary: 'This long executive summary validates PDF wrapping for generated AI copy. It should flow into multiple lines without overlapping the metric box, the section title, or the next section in the document.',
+            velocity: 'high, a single developer completed many commits over a month while also shipping Gemini upgrades, GitHub integration, authentication fixes, and export polish',
+            highlights: [
+              'Completed a long list of important fixes across Docker startup, CORS origin handling, GitHub OAuth session persistence, and report generation.',
+              'Improved multiple frontend insight states and backend data paths while keeping repository sync behavior intact.'
+            ],
+            concerns: [
+              'Long-form generated text can be verbose, so the PDF renderer must wrap bullets and card values rather than relying on fixed heights.'
+            ],
+            sprintScore: 8
+          }
+        }
+      );
+
+      const res = await request(app)
+        .get(`/api/export/repos/${repoA._id}/pdf`)
+        .set('Authorization', `Bearer ${tokenA}`)
+        .buffer(true)
+        .parse(binaryParser);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toBeInstanceOf(Buffer);
+      expect(res.body.slice(0, 4).toString()).toBe('%PDF');
+    });
   });
 
   // ─── Test 9-10: No external API calls ───
