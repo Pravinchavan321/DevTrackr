@@ -132,6 +132,30 @@ describe('GitHub Integration & OAuth Routes', () => {
       expect(res.headers.location).toContain('state=');
       expect(res.headers['set-cookie']).toBeDefined(); // Cookie containing state should be set
     });
+
+    test('sets production OAuth state cookie for cross-site frontend requests', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        const regRes = await request(app).post('/api/auth/register').send(mockUser);
+        const token = regRes.body.data.accessToken;
+
+        const res = await request(app)
+          .get('/api/github/connect')
+          .set('Authorization', `Bearer ${token}`);
+
+        const stateCookie = res.headers['set-cookie'].find((cookie) =>
+          cookie.startsWith('github_oauth_state=')
+        );
+
+        expect(stateCookie).toContain('HttpOnly');
+        expect(stateCookie).toContain('Secure');
+        expect(stateCookie).toContain('SameSite=None');
+      } finally {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
   });
 
   // Test Callback Route
@@ -194,6 +218,46 @@ describe('GitHub Integration & OAuth Routes', () => {
 
         const decrypted = encryptionHelper.decrypt(dbUser.githubAccessToken);
         expect(decrypted).toBe('mock-github-access-token');
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+
+    test('GET /api/github/callback succeeds when browser does not return the state cookie', async () => {
+      // 1. Register & Login user
+      const regRes = await request(app).post('/api/auth/register').send(mockUser);
+      const token = regRes.body.data.accessToken;
+
+      // 2. Start connection flow to persist server-side OAuth state
+      const connectRes = await request(app)
+        .get('/api/github/connect')
+        .set('Authorization', `Bearer ${token}`);
+
+      const redirectUrl = connectRes.headers.location;
+      const stateParam = new URL(redirectUrl).searchParams.get('state');
+
+      // Mock only global fetch for OAuth exchange
+      const originalFetch = global.fetch;
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ access_token: 'mock-github-access-token' })
+      });
+
+      try {
+        // 3. Fire callback without Cookie header to simulate blocked third-party cookies
+        const callbackRes = await request(app)
+          .get('/api/github/callback')
+          .query({ code: 'valid-code', state: stateParam });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.location).toContain('settings?github=connected');
+
+        const dbUser = await User.findOne({ email: mockUser.email }).select(
+          '+githubAccessToken +githubOAuthState +githubOAuthStateExpiresAt'
+        );
+        expect(dbUser.githubConnected).toBe(true);
+        expect(dbUser.githubOAuthState).toBeUndefined();
+        expect(dbUser.githubOAuthStateExpiresAt).toBeUndefined();
       } finally {
         global.fetch = originalFetch;
       }

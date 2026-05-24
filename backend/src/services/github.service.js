@@ -38,7 +38,7 @@ const assertGitHubOAuthConfig = ({ includeSecret = false } = {}) => {
  * @param {string} userId - The authenticated user's ID
  * @returns {object} { url, state }
  */
-export const generateGitHubAuthUrl = (userId) => {
+export const generateGitHubAuthUrl = async (userId) => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
     throw new Error('JWT_SECRET environment variable is missing');
@@ -51,9 +51,16 @@ export const generateGitHubAuthUrl = (userId) => {
   const state = jwt.sign({ userId, nonce }, jwtSecret, { expiresIn: '15m' });
 
   const scope = 'repo read:user user:email';
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
   const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&scope=${encodeURIComponent(scope)}&state=${state}&prompt=select_account`;
+
+  await User.findByIdAndUpdate(userId, {
+    githubOAuthState: state,
+    githubOAuthStateExpiresAt: expiresAt
+  });
 
   return { url, state };
 };
@@ -117,10 +124,7 @@ export const handleGitHubCallback = async (code, state, cookieState) => {
   if (!state) {
     throw new Error('State parameter is missing');
   }
-  if (!cookieState) {
-    throw new Error('State cookie is missing');
-  }
-  if (state !== cookieState) {
+  if (cookieState && state !== cookieState) {
     throw new Error('CSRF State validation failed');
   }
 
@@ -141,6 +145,19 @@ export const handleGitHubCallback = async (code, state, cookieState) => {
     throw new Error('Invalid state payload');
   }
 
+  const user = await User.findById(userId).select(
+    '+githubAccessToken +githubOAuthState +githubOAuthStateExpiresAt'
+  );
+  if (!user) {
+    throw new Error('User not found');
+  }
+  if (!user.githubOAuthState || user.githubOAuthState !== state) {
+    throw new Error('Invalid or expired OAuth state');
+  }
+  if (!user.githubOAuthStateExpiresAt || user.githubOAuthStateExpiresAt < new Date()) {
+    throw new Error('Expired OAuth state');
+  }
+
   // 1. Exchange code for access token
   const accessToken = await exchangeCodeForToken(code);
 
@@ -150,16 +167,12 @@ export const handleGitHubCallback = async (code, state, cookieState) => {
   // 3. Encrypt access token
   const encryptedToken = encrypt(accessToken);
 
-  // 4. Update the User document
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
-
   user.githubConnected = true;
   user.githubId = String(githubUser.id);
   user.githubUsername = githubUser.login;
   user.githubAccessToken = encryptedToken;
+  user.githubOAuthState = undefined;
+  user.githubOAuthStateExpiresAt = undefined;
 
   await user.save();
 

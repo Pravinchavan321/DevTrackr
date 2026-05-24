@@ -98,6 +98,27 @@ describe('Auth Routes', () => {
       expect(res.status).toBe(422);
       expect(res.body.success).toBe(false);
     });
+
+    test('should set production refresh cookie for cross-site frontend refresh', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        const res = await request(app)
+          .post('/api/auth/register')
+          .send(mockUser);
+
+        const refreshCookie = res.headers['set-cookie'].find((cookie) =>
+          cookie.startsWith('refreshToken=')
+        );
+
+        expect(refreshCookie).toContain('HttpOnly');
+        expect(refreshCookie).toContain('Secure');
+        expect(refreshCookie).toContain('SameSite=None');
+      } finally {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
   });
 
   // =========== LOGIN TESTS ===========

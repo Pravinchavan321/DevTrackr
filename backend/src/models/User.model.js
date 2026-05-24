@@ -46,6 +46,16 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
       select: false
+    },
+
+    githubOAuthState: {
+      type: String,
+      select: false
+    },
+
+    githubOAuthStateExpiresAt: {
+      type: Date,
+      select: false
     }
   },
   {
