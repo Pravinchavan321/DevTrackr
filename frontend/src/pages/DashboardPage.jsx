@@ -19,6 +19,7 @@ import {
 import useAuth from '../hooks/useAuth';
 import useRepoStore from '../store/repoStore';
 import useAnalytics from '../hooks/useAnalytics';
+import useEngineeringIntelligence from '../hooks/useEngineeringIntelligence';
 import StatsCard from '../components/dashboard/StatsCard';
 import ActivityFeed from '../components/dashboard/ActivityFeed';
 import EmptyState from '../components/common/EmptyState';
@@ -27,6 +28,9 @@ import CommitBarChart from '../components/charts/CommitBarChart';
 import VelocityAreaChart from '../components/charts/VelocityAreaChart';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import SyncButton from '../components/dashboard/SyncButton';
+import ReleaseReadinessCard from '../components/engineering/ReleaseReadinessCard';
+import WorkloadIntelligenceCard from '../components/engineering/WorkloadIntelligenceCard';
+import SprintRetrospectiveCard from '../components/engineering/SprintRetrospectiveCard';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -45,6 +49,15 @@ export default function DashboardPage() {
     fetchCommitChart,
     fetchCommits
   } = useAnalytics();
+
+  const {
+    loading: intelligenceLoading,
+    releaseReadiness,
+    workloadHealth,
+    sprintRetrospective,
+    errors: intelligenceErrors,
+    fetchEngineeringIntelligence
+  } = useEngineeringIntelligence();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,6 +87,17 @@ export default function DashboardPage() {
       loadDashboardData(selectedRepo._id);
     }
   }, [selectedRepo, repositoryActivityVersion, loadDashboardData]);
+
+  const loadEngineeringIntelligence = useCallback((repoId) => {
+    if (!repoId) return;
+    fetchEngineeringIntelligence(repoId, { range: '7d' });
+  }, [fetchEngineeringIntelligence]);
+
+  useEffect(() => {
+    if (selectedRepo && selectedRepo._id) {
+      loadEngineeringIntelligence(selectedRepo._id);
+    }
+  }, [selectedRepo, repositoryActivityVersion, loadEngineeringIntelligence]);
 
   if (statusLoading) {
     return (
@@ -368,6 +392,35 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <ErrorBoundary>
+            <ReleaseReadinessCard
+              data={releaseReadiness}
+              loading={intelligenceLoading}
+              error={intelligenceErrors.releaseReadiness}
+              onRetry={() => loadEngineeringIntelligence(selectedRepo._id)}
+            />
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <WorkloadIntelligenceCard
+              data={workloadHealth}
+              loading={intelligenceLoading}
+              error={intelligenceErrors.workloadHealth}
+              onRetry={() => loadEngineeringIntelligence(selectedRepo._id)}
+            />
+          </ErrorBoundary>
+        </div>
+        <ErrorBoundary>
+          <SprintRetrospectiveCard
+            data={sprintRetrospective}
+            loading={intelligenceLoading}
+            error={intelligenceErrors.sprintRetrospective}
+            onRetry={() => loadEngineeringIntelligence(selectedRepo._id)}
+          />
+        </ErrorBoundary>
+      </div>
 
       {/* 3D Section Divider */}
       <div className="relative flex items-center justify-center py-4">

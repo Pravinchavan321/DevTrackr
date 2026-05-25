@@ -34,6 +34,11 @@ export const API_ROUTES = {
     RECOMMENDATIONS: (repoId) => `/ai/repos/${repoId}/recommendations`,
     INSIGHTS: (repoId) => `/ai/repos/${repoId}/insights`
   },
+  ENGINEERING_INTELLIGENCE: {
+    RELEASE_READINESS: (repoId) => `/engineering-intelligence/repos/${repoId}/release-readiness`,
+    WORKLOAD_HEALTH: (repoId) => `/engineering-intelligence/repos/${repoId}/workload-health`,
+    SPRINT_RETROSPECTIVE: (repoId) => `/engineering-intelligence/repos/${repoId}/sprint-retrospective`
+  },
   EXPORT: {
     PDF: (repoId) => `/export/repos/${repoId}/pdf`
   }

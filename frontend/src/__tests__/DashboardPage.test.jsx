@@ -25,6 +25,17 @@ vi.mock('../hooks/useAnalytics', () => ({
   })
 }));
 
+vi.mock('../hooks/useEngineeringIntelligence', () => ({
+  default: () => ({
+    loading: false,
+    releaseReadiness: null,
+    workloadHealth: null,
+    sprintRetrospective: null,
+    errors: {},
+    fetchEngineeringIntelligence: vi.fn()
+  })
+}));
+
 // Mock ResizeObserver
 beforeAll(() => {
   global.ResizeObserver = vi.fn().mockImplementation(() => ({

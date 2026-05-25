@@ -337,3 +337,61 @@ export const generateRecommendations = async (inputData) => {
   
   return parsed;
 };
+
+export const generateReleaseReadinessNarrative = async (inputData) => {
+  const prompt = promptBuilder.buildReleaseReadinessPrompt(inputData);
+  const parsed = await callGeminiWithRetry(prompt);
+
+  if (!parsed || parsed._aiError) {
+    return {
+      _aiError: true,
+      _aiErrorMessage: parsed?._aiErrorMessage || defaultGeminiErrorMessage,
+      riskFactors: [],
+      recommendations: []
+    };
+  }
+
+  return {
+    riskFactors: Array.isArray(parsed.riskFactors) ? parsed.riskFactors.slice(0, 3) : [],
+    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 3) : []
+  };
+};
+
+export const generateWorkloadIntelligenceNarrative = async (inputData) => {
+  const prompt = promptBuilder.buildWorkloadIntelligencePrompt(inputData);
+  const parsed = await callGeminiWithRetry(prompt);
+
+  if (!parsed || parsed._aiError) {
+    return {
+      _aiError: true,
+      _aiErrorMessage: parsed?._aiErrorMessage || defaultGeminiErrorMessage,
+      topRisk: '',
+      recommendations: []
+    };
+  }
+
+  return {
+    topRisk: typeof parsed.topRisk === 'string' ? parsed.topRisk : '',
+    recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 4) : []
+  };
+};
+
+export const generateSprintRetrospectiveNarrative = async (inputData) => {
+  const prompt = promptBuilder.buildSprintRetrospectivePrompt(inputData);
+  const parsed = await callGeminiWithRetry(prompt);
+
+  if (!parsed || parsed._aiError) {
+    return {
+      _aiError: true,
+      _aiErrorMessage: parsed?._aiErrorMessage || defaultGeminiErrorMessage
+    };
+  }
+
+  return {
+    summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+    whatWentWell: Array.isArray(parsed.whatWentWell) ? parsed.whatWentWell.slice(0, 5) : [],
+    whatWentWrong: Array.isArray(parsed.whatWentWrong) ? parsed.whatWentWrong.slice(0, 5) : [],
+    risks: Array.isArray(parsed.risks) ? parsed.risks.slice(0, 5) : [],
+    actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems.slice(0, 5) : []
+  };
+};

@@ -135,3 +135,95 @@ You must return a raw JSON response. Do NOT wrap the JSON in markdown code block
 }
 Do not write anything other than the raw JSON output.`;
 };
+
+export const buildReleaseReadinessPrompt = (data) => {
+  const { repoName, score, status, metrics = {}, riskFactors = [], recommendations = [] } = data;
+
+  return `Based on these repository health metrics for ${repoName}, generate 3 concise reasons and 3 practical recommendations for release readiness. Do not invent data. Use only provided metrics.
+
+SUMMARY:
+- Readiness Score: ${score}
+- Status: ${status}
+- Open PRs: ${metrics.openPrs ?? 0}
+- Stale PRs: ${metrics.stalePrs ?? 0}
+- Open Issues: ${metrics.openIssues ?? 0}
+- Stale Issues: ${metrics.staleIssues ?? 0}
+- Recent Commits: ${metrics.recentCommits ?? 0}
+- Previous Period Commits: ${metrics.previousCommits ?? 0}
+- Commit Drop Percentage: ${metrics.commitDropPercentage ?? 0}
+- Contributor Imbalance: ${metrics.contributorImbalance ?? 0}
+- Average PR Merge Time Hours: ${metrics.avgMergeTimeHours ?? 0}
+- Failed Builds: ${metrics.failedBuilds ?? 0}
+- Build Health Available: ${metrics.buildHealthAvailable ? 'yes' : 'no'}
+
+RULE-BASED SIGNALS:
+Reasons: ${riskFactors.join('; ') || 'No major release blockers detected'}
+Recommendations: ${recommendations.join('; ') || 'Keep monitoring release signals'}
+
+You must return a raw JSON response. Do NOT wrap the JSON in markdown code blocks or any other text. Follow this exact JSON schema:
+{
+  "riskFactors": ["reason1", "reason2", "reason3"],
+  "recommendations": ["recommendation1", "recommendation2", "recommendation3"]
+}
+Do not write anything other than the raw JSON output.`;
+};
+
+export const buildWorkloadIntelligencePrompt = (data) => {
+  const { repoName, status, topRisk = '', contributors = [] } = data;
+
+  const contributorSummary = contributors
+    .slice(0, 8)
+    .map((contributor) => `- ${contributor.name}: workload ${contributor.workloadShare}%, commits ${contributor.commitCount}, open PRs ${contributor.openPrCount}, assigned issues ${contributor.assignedIssueCount}, review load ${contributor.reviewLoadCount}`)
+    .join('\n');
+
+  return `Based on these contributor workload metrics for ${repoName}, generate professional suggestions to reduce workload imbalance. Avoid blaming individuals. Use only provided metrics.
+
+WORKLOAD SUMMARY:
+- Overall Status: ${status}
+- Top Risk: ${topRisk || 'None'}
+
+CONTRIBUTORS:
+${contributorSummary || 'No contributor workload data available.'}
+
+You must return a raw JSON response. Do NOT wrap the JSON in markdown code blocks or any other text. Follow this exact JSON schema:
+{
+  "topRisk": "professional top risk statement",
+  "recommendations": ["suggestion1", "suggestion2", "suggestion3"]
+}
+Do not write anything other than the raw JSON output.`;
+};
+
+export const buildSprintRetrospectivePrompt = (data) => {
+  const { repoName, range, metrics = {}, releaseReadiness = {}, workloadHealth = {} } = data;
+
+  return `Generate a sprint retrospective for ${repoName} with sections: What went well, What went wrong, Risks, Action items. Use only the provided repository metrics. Be concise and practical.
+
+PERIOD:
+- Range: ${range}
+
+REPOSITORY METRICS:
+- Commits: ${metrics.commits ?? 0}
+- Previous Period Commits: ${metrics.previousCommits ?? 0}
+- Commit Change Percentage: ${metrics.commitChangePercentage ?? 0}
+- PRs Created: ${metrics.prsCreated ?? 0}
+- PRs Merged: ${metrics.prsMerged ?? 0}
+- Issues Opened: ${metrics.issuesOpened ?? 0}
+- Issues Closed: ${metrics.issuesClosed ?? 0}
+- Stale PRs: ${metrics.stalePrs ?? 0}
+- Stale Issues: ${metrics.staleIssues ?? 0}
+
+INTELLIGENCE SIGNALS:
+- Release Readiness: ${releaseReadiness.score ?? 0}% (${releaseReadiness.status || 'unknown'})
+- Workload Health: ${workloadHealth.status || 'unknown'}
+- Workload Top Risk: ${workloadHealth.topRisk || 'None'}
+
+You must return a raw JSON response. Do NOT wrap the JSON in markdown code blocks or any other text. Follow this exact JSON schema:
+{
+  "summary": "one concise executive summary sentence",
+  "whatWentWell": ["item1", "item2", "item3"],
+  "whatWentWrong": ["item1", "item2", "item3"],
+  "risks": ["risk1", "risk2", "risk3"],
+  "actionItems": ["action1", "action2", "action3"]
+}
+Do not write anything other than the raw JSON output.`;
+};

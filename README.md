@@ -25,9 +25,28 @@ Core capabilities:
 - Commit, pull request, issue, and contributor analytics
 - Repository health risk score with Healthy / Warning / Critical status
 - DORA-style deployment frequency and lead time metrics
+- Engineering intelligence: release readiness, workload balance, and sprint retrospectives
 - AI insights and sprint summaries via Google Gemini
 - PDF report export for team performance metrics
 - Docker Compose deployment for fast local setup
+
+## Engineering Intelligence Features
+
+DevTrackr adds an industry-style intelligence layer on top of synced GitHub activity:
+
+- AI Release Readiness Predictor: scores release confidence from stale PRs, stale issues, recent commit activity, merge time, contributor concentration, and available build-health signals.
+- Developer Workload Intelligence: detects workload concentration using commits, open PR ownership, assigned issues, and review load without blaming contributors.
+- AI Sprint Retrospective Generator: summarizes what went well, what went wrong, risks, and next sprint action items from recent repository activity.
+
+API routes:
+
+```text
+GET /api/engineering-intelligence/repos/:repoId/release-readiness
+GET /api/engineering-intelligence/repos/:repoId/workload-health
+GET /api/engineering-intelligence/repos/:repoId/sprint-retrospective?range=7d
+```
+
+Required data sources are the existing synced commits, pull requests, issues, reviewers, and assignees. If Gemini is not configured or unavailable, DevTrackr returns safe rule-based explanations and recommendations. If CI/CD or review timing data is missing, the response clearly says that data is not available instead of inventing numbers.
 
 ## Project Structure
 
