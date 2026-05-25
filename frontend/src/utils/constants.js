@@ -24,6 +24,7 @@ export const API_ROUTES = {
     CONTRIBUTORS: (repoId) => `/analytics/repos/${repoId}/contributors`,
     PULL_REQUESTS: (repoId) => `/analytics/repos/${repoId}/pullrequests`,
     ISSUES: (repoId) => `/analytics/repos/${repoId}/issues`,
+    HEALTH: (repoId) => `/analytics/repos/${repoId}/health`,
     VELOCITY: (repoId) => `/analytics/repos/${repoId}/velocity`
   },
   AI: {

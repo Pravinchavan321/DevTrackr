@@ -585,4 +585,62 @@ describe('Analytics API Engine', () => {
       expect(metrics.commitsPerDay).toBe(0);
     });
   });
+
+  describe('Repository Health and DORA Metrics', () => {
+    test('19. Health endpoint returns risk score and first two DORA metrics', async () => {
+      await setupMockDataForRepoA();
+
+      const res = await request(app)
+        .get(`/api/analytics/repos/${repoA._id}/health`)
+        .set('Authorization', `Bearer ${tokenA}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const health = res.body.data;
+      expect(health.riskScore).toBeGreaterThanOrEqual(0);
+      expect(health.riskScore).toBeLessThanOrEqual(100);
+      expect(['Healthy', 'Warning', 'Critical']).toContain(health.status);
+      expect(Array.isArray(health.factors)).toBe(true);
+      expect(health.summary.totalCommits).toBe(15);
+      expect(health.summary.totalPRs).toBe(5);
+      expect(health.summary.prMergeRate).toBe(40);
+
+      expect(health.dora.deploymentFrequency).toEqual(
+        expect.objectContaining({
+          unit: 'deployable changes/week',
+          deployableChangesLast30Days: expect.any(Number),
+          rating: expect.any(String)
+        })
+      );
+
+      expect(health.dora.leadTimeForChanges).toEqual(
+        expect.objectContaining({
+          value: 11,
+          unit: 'hours',
+          valueDays: 0.46,
+          sampleSize: 2,
+          rating: 'elite'
+        })
+      );
+    });
+
+    test('20. Health endpoint handles empty repository safely', async () => {
+      const res = await request(app)
+        .get(`/api/analytics/repos/${repoA._id}/health`)
+        .set('Authorization', `Bearer ${tokenA}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const health = res.body.data;
+      expect(health.riskScore).toBeGreaterThanOrEqual(0);
+      expect(health.riskScore).toBeLessThanOrEqual(100);
+      expect(health.status).toBe('Warning');
+      expect(health.summary.totalCommits).toBe(0);
+      expect(health.dora.deploymentFrequency.value).toBe(0);
+      expect(health.dora.leadTimeForChanges.value).toBe(0);
+      expect(health.dora.leadTimeForChanges.rating).toBe('unknown');
+    });
+  });
 });

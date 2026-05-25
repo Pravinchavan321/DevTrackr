@@ -86,6 +86,7 @@ export default function useAnalytics() {
   const [contributors, setContributors] = useState(null);
   const [pullRequests, setPullRequests] = useState(null);
   const [issues, setIssues] = useState(null);
+  const [healthMetrics, setHealthMetrics] = useState(null);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -197,6 +198,24 @@ export default function useAnalytics() {
     }
   }, []);
 
+  const fetchHealthMetrics = useCallback(async (repoId) => {
+    if (!repoId) return;
+    setLoading(true);
+    setError(null);
+    const key = cacheKey('health', repoId);
+    try {
+      const data = await fetchCachedAnalytics(key, () => analyticsApi.getRepositoryHealth(repoId));
+      setHealthMetrics(data);
+      return data;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to fetch repository health metrics';
+      setError(msg);
+      setHealthMetrics(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     error,
@@ -207,11 +226,13 @@ export default function useAnalytics() {
     contributors,
     pullRequests,
     issues,
+    healthMetrics,
     fetchVelocity,
     fetchCommitChart,
     fetchCommits,
     fetchContributors,
     fetchPullRequests,
-    fetchIssues
+    fetchIssues,
+    fetchHealthMetrics
   };
 }

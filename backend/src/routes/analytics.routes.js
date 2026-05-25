@@ -10,6 +10,7 @@ router.get('/repos/:repoId/commits', authenticateToken, analyticsController.getC
 router.get('/repos/:repoId/contributors', authenticateToken, analyticsController.getContributors);
 router.get('/repos/:repoId/pullrequests', authenticateToken, analyticsController.getPullRequests);
 router.get('/repos/:repoId/issues', authenticateToken, analyticsController.getIssues);
+router.get('/repos/:repoId/health', authenticateToken, analyticsController.getRepositoryHealth);
 router.get('/repos/:repoId/velocity', authenticateToken, analyticsController.getVelocity);
 
 export default router;

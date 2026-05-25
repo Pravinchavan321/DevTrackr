@@ -15,9 +15,11 @@ vi.mock('../hooks/useAuth', () => ({
 vi.mock('../hooks/useAnalytics', () => ({
   default: () => ({
     velocity: {},
+    healthMetrics: null,
     commitChart: [],
     commits: [],
     fetchVelocity: vi.fn(),
+    fetchHealthMetrics: vi.fn(),
     fetchCommitChart: vi.fn(),
     fetchCommits: vi.fn()
   })

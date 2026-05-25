@@ -29,3 +29,8 @@ export const getVelocity = async (repoId) => {
   const response = await api.get(`/analytics/repos/${repoId}/velocity`);
   return response.data;
 };
+
+export const getRepositoryHealth = async (repoId) => {
+  const response = await api.get(`/analytics/repos/${repoId}/health`);
+  return response.data;
+};

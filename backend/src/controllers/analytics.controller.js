@@ -59,3 +59,12 @@ export const getVelocity = asyncHandler(async (req, res) => {
 
   sendSuccess(res, data, 'Velocity metrics fetched successfully');
 });
+
+export const getRepositoryHealth = asyncHandler(async (req, res) => {
+  const { repoId } = req.params;
+  const userId = req.user._id;
+
+  const data = await analyticsService.getRepositoryHealth(repoId, userId);
+
+  sendSuccess(res, data, 'Repository health and DORA metrics fetched successfully');
+});

@@ -11,7 +11,10 @@ import {
   CalendarIcon,
   DocumentTextIcon,
   CheckIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ShieldCheckIcon,
+  RocketLaunchIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import useAuth from '../hooks/useAuth';
 import useRepoStore from '../store/repoStore';
@@ -34,9 +37,11 @@ export default function DashboardPage() {
   
   const {
     velocity,
+    healthMetrics,
     commitChart,
     commits,
     fetchVelocity,
+    fetchHealthMetrics,
     fetchCommitChart,
     fetchCommits
   } = useAnalytics();
@@ -52,6 +57,7 @@ export default function DashboardPage() {
     try {
       await Promise.all([
         fetchVelocity(repoId),
+        fetchHealthMetrics(repoId),
         fetchCommitChart(repoId, { groupBy: 'day' }),
         fetchCommits(repoId, { page: 1, limit: 10 })
       ]);
@@ -61,7 +67,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [fetchVelocity, fetchCommitChart, fetchCommits]);
+  }, [fetchVelocity, fetchHealthMetrics, fetchCommitChart, fetchCommits]);
 
   useEffect(() => {
     if (selectedRepo && selectedRepo._id) {
@@ -188,6 +194,15 @@ export default function DashboardPage() {
     );
   }
 
+  const healthStatus = healthMetrics?.status || 'Unknown';
+  const healthColor = healthStatus === 'Critical'
+    ? 'red'
+    : healthStatus === 'Warning'
+      ? 'amber'
+      : 'emerald';
+  const deploymentFrequency = healthMetrics?.dora?.deploymentFrequency;
+  const leadTimeForChanges = healthMetrics?.dora?.leadTimeForChanges;
+
   // Case 4: GitHub is connected and a repository is active and loaded
   return (
     <div className="space-y-6">
@@ -209,15 +224,42 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 8 Analytics Metric Cards Grid */}
+      {/* Analytics Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          label="Repo Health"
+          value={healthMetrics?.riskScore ?? 0}
+          icon={ShieldCheckIcon}
+          loading={loading}
+          description={`${healthStatus} risk score`}
+          style={{ animationDelay: '0ms' }}
+          color={healthColor}
+        />
+        <StatsCard
+          label="Deployment Frequency"
+          value={`${deploymentFrequency?.value ?? 0}/wk`}
+          icon={RocketLaunchIcon}
+          loading={loading}
+          description={`${deploymentFrequency?.deployableChangesLast30Days ?? 0} deployable changes in 30d`}
+          style={{ animationDelay: '80ms' }}
+          color="cyan"
+        />
+        <StatsCard
+          label="Lead Time"
+          value={`${Math.round(leadTimeForChanges?.value ?? 0)}h`}
+          icon={ClockIcon}
+          loading={loading}
+          description="PR creation to merge"
+          style={{ animationDelay: '160ms' }}
+          color={leadTimeForChanges?.rating === 'low' ? 'amber' : 'emerald'}
+        />
         <StatsCard
           label="Total Commits"
           value={velocity?.totalCommits ?? 0}
           icon={CommandLineIcon}
           loading={loading}
           description="Total commits synced"
-          style={{ animationDelay: '0ms' }}
+          style={{ animationDelay: '240ms' }}
           color="violet"
         />
         <StatsCard
@@ -226,7 +268,7 @@ export default function DashboardPage() {
           icon={DocumentTextIcon}
           loading={loading}
           description="Pull requests synced"
-          style={{ animationDelay: '100ms' }}
+          style={{ animationDelay: '320ms' }}
           color="cyan"
         />
         <StatsCard
@@ -235,7 +277,7 @@ export default function DashboardPage() {
           icon={CheckIcon}
           loading={loading}
           description="Successfully merged"
-          style={{ animationDelay: '200ms' }}
+          style={{ animationDelay: '400ms' }}
           color="emerald"
         />
         <StatsCard
@@ -244,7 +286,7 @@ export default function DashboardPage() {
           icon={ExclamationCircleIcon}
           loading={loading}
           description="Currently active"
-          style={{ animationDelay: '300ms' }}
+          style={{ animationDelay: '480ms' }}
           color="amber"
         />
         <StatsCard
@@ -253,7 +295,7 @@ export default function DashboardPage() {
           icon={CheckCircleIcon}
           loading={loading}
           description="Resolved / completed"
-          style={{ animationDelay: '400ms' }}
+          style={{ animationDelay: '560ms' }}
           color="cyan"
         />
         <StatsCard
@@ -262,7 +304,7 @@ export default function DashboardPage() {
           icon={ArrowsRightLeftIcon}
           loading={loading}
           description="Ratio of merged PRs"
-          style={{ animationDelay: '500ms' }}
+          style={{ animationDelay: '640ms' }}
           color="emerald"
         />
         <StatsCard
@@ -271,7 +313,7 @@ export default function DashboardPage() {
           icon={BoltIcon}
           loading={loading}
           description="Average pull request lifespan"
-          style={{ animationDelay: '600ms' }}
+          style={{ animationDelay: '720ms' }}
           color="amber"
         />
         <StatsCard
@@ -280,10 +322,52 @@ export default function DashboardPage() {
           icon={CalendarIcon}
           loading={loading}
           description="Velocity daily rate"
-          style={{ animationDelay: '700ms' }}
+          style={{ animationDelay: '800ms' }}
           color="violet"
         />
       </div>
+
+      {healthMetrics?.factors?.length > 0 && (
+        <div className="bg-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-gray-200 font-semibold border-l-4 border-emerald-500 pl-3">Repository Health Signals</h2>
+              <p className="text-xs text-gray-500 mt-1">Risk score inputs from stale work, delivery flow, lead time, and contributor concentration.</p>
+            </div>
+            <span className={`self-start sm:self-center rounded-full border px-3 py-1 text-xs font-semibold ${
+              healthStatus === 'Critical'
+                ? 'border-red-500/25 bg-red-500/10 text-red-300'
+                : healthStatus === 'Warning'
+                  ? 'border-amber-500/25 bg-amber-500/10 text-amber-300'
+                  : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+            }`}>
+              {healthStatus}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {healthMetrics.factors.slice(0, 3).map((factor) => (
+              <div key={factor.key} className="rounded-xl border border-gray-800 bg-gray-950/40 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-gray-200">{factor.label}</h3>
+                  <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    factor.severity === 'high'
+                      ? 'bg-red-500/10 text-red-300'
+                      : factor.severity === 'medium'
+                        ? 'bg-amber-500/10 text-amber-300'
+                        : factor.severity === 'positive'
+                          ? 'bg-emerald-500/10 text-emerald-300'
+                          : 'bg-cyan-500/10 text-cyan-300'
+                  }`}>
+                    {factor.value}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-gray-500">{factor.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 3D Section Divider */}
       <div className="relative flex items-center justify-center py-4">

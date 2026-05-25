@@ -23,6 +23,8 @@ Core capabilities:
 - Secure user registration and login
 - GitHub OAuth integration for repo sync
 - Commit, pull request, issue, and contributor analytics
+- Repository health risk score with Healthy / Warning / Critical status
+- DORA-style deployment frequency and lead time metrics
 - AI insights and sprint summaries via Google Gemini
 - PDF report export for team performance metrics
 - Docker Compose deployment for fast local setup
