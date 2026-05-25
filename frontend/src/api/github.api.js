@@ -20,6 +20,11 @@ export const getRepos = async () => {
   return response.data;
 };
 
+export const getRepositoryActivityStatus = async (repoId) => {
+  const response = await api.get(`/github/repos/${repoId}/activity-status`);
+  return response.data;
+};
+
 export const syncRepo = async (repoFullName) => {
   const encodedName = encodeURIComponent(repoFullName);
   const response = await api.post(`/github/repos/${encodedName}/sync`);

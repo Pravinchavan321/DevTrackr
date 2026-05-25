@@ -6,6 +6,7 @@ import ErrorBoundary from '../common/ErrorBoundary';
 import useAuth from '../../hooks/useAuth';
 import useRepoStore from '../../store/repoStore';
 import * as githubApi from '../../api/github.api';
+import useRepoActivityRefresh from '../../hooks/useRepoActivityRefresh';
 
 export default function AppLayout() {
   const { user } = useAuth();
@@ -17,6 +18,8 @@ export default function AppLayout() {
   const setActiveUserId = useRepoStore((state) => state.setActiveUserId);
   const setStatusLoading = useRepoStore((state) => state.setStatusLoading);
   const userId = user?._id || user?.id || null;
+
+  useRepoActivityRefresh();
 
   useEffect(() => {
     let cancelled = false;

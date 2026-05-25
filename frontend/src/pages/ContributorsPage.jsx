@@ -12,6 +12,7 @@ import SyncButton from '../components/dashboard/SyncButton';
 
 export default function ContributorsPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   const {
     contributors,
     fetchContributors
@@ -38,7 +39,7 @@ export default function ContributorsPage() {
     if (selectedRepo && selectedRepo._id) {
       loadContributorsData(selectedRepo._id);
     }
-  }, [selectedRepo, loadContributorsData]);
+  }, [selectedRepo, repositoryActivityVersion, loadContributorsData]);
 
   if (!selectedRepo) {
     return (

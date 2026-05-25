@@ -13,6 +13,7 @@ import SyncButton from '../components/dashboard/SyncButton';
 
 export default function CommitsPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   const {
     commits,
     commitChart,
@@ -46,7 +47,7 @@ export default function CommitsPage() {
     if (selectedRepo && selectedRepo._id) {
       loadCommitsData(selectedRepo._id, page, groupBy);
     }
-  }, [selectedRepo, page, groupBy, loadCommitsData]);
+  }, [selectedRepo, page, groupBy, repositoryActivityVersion, loadCommitsData]);
 
   // Handle repository change (reset page)
   useEffect(() => {

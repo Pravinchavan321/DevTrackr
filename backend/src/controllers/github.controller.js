@@ -1,5 +1,6 @@
 import * as githubService from '../services/github.service.js';
 import * as syncService from '../services/sync.service.js';
+import * as webhookService from '../services/webhook.service.js';
 import { sendSuccess, sendError } from '../utils/responseHelper.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import logger from '../config/logger.js';
@@ -100,4 +101,42 @@ export const syncRepository = asyncHandler(async (req, res) => {
 
   const result = await syncService.syncRepository(userId, repoFullName);
   sendSuccess(res, result, 'Repository synced successfully');
+});
+
+/**
+ * Receives signed GitHub webhook events and applies incremental repository updates.
+ */
+export const webhook = asyncHandler(async (req, res) => {
+  const event = req.get('x-github-event');
+  const deliveryId = req.get('x-github-delivery');
+  const signature = req.get('x-hub-signature-256');
+
+  const isValidSignature = webhookService.verifyGitHubSignature({
+    rawBody: req.rawBody,
+    signatureHeader: signature
+  });
+
+  if (!isValidSignature) {
+    return sendError(res, 'Invalid GitHub webhook signature', [], 401);
+  }
+
+  const result = await webhookService.handleGitHubWebhook({
+    event,
+    deliveryId,
+    payload: req.body
+  });
+
+  sendSuccess(res, result, 'GitHub webhook processed successfully', 202);
+});
+
+/**
+ * Lightweight status endpoint used by the frontend to notice webhook updates.
+ */
+export const repositoryActivityStatus = asyncHandler(async (req, res) => {
+  const { repoId } = req.params;
+  const userId = req.user._id;
+
+  const status = await githubService.getRepositoryActivityStatus(repoId, userId);
+
+  sendSuccess(res, status, 'Repository activity status retrieved');
 });

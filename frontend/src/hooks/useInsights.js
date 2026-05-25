@@ -57,6 +57,17 @@ const updateInsightCacheDoc = (repoId, type, doc) => {
   return next;
 };
 
+export const invalidateInsightsCache = (repoId = null) => {
+  if (!repoId) {
+    insightsCache.clear();
+    insightsInflight.clear();
+    return;
+  }
+
+  insightsCache.delete(repoId);
+  insightsInflight.delete(repoId);
+};
+
 export default function useInsights() {
   const [loading, setLoading] = useState(false);
   const [cachedInsights, setCachedInsights] = useState(emptyInsights);

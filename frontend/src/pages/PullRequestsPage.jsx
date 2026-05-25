@@ -13,6 +13,7 @@ import SyncButton from '../components/dashboard/SyncButton';
 
 export default function PullRequestsPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   const {
     pullRequests,
     fetchPullRequests
@@ -41,7 +42,7 @@ export default function PullRequestsPage() {
     if (selectedRepo && selectedRepo._id) {
       loadPRsData(selectedRepo._id, page, stateFilter);
     }
-  }, [selectedRepo, page, stateFilter, loadPRsData]);
+  }, [selectedRepo, page, stateFilter, repositoryActivityVersion, loadPRsData]);
 
   // Reset page when filter or repository changes
   useEffect(() => {

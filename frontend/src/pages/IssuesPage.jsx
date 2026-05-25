@@ -14,6 +14,7 @@ import SyncButton from '../components/dashboard/SyncButton';
 
 export default function IssuesPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   const {
     issues,
     fetchIssues
@@ -42,7 +43,7 @@ export default function IssuesPage() {
     if (selectedRepo && selectedRepo._id) {
       loadIssuesData(selectedRepo._id, page, stateFilter);
     }
-  }, [selectedRepo, page, stateFilter, loadIssuesData]);
+  }, [selectedRepo, page, stateFilter, repositoryActivityVersion, loadIssuesData]);
 
   // Reset page when filter or repository changes
   useEffect(() => {

@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { Octokit } from '@octokit/rest';
 import User from '../models/User.model.js';
 import { encrypt, decrypt } from '../utils/encryptionHelper.js';
@@ -260,4 +261,35 @@ export const disconnectGitHub = async (userId) => {
   logger.info('GitHub account disconnected successfully', { userId });
 
   return { success: true };
+};
+
+export const getRepositoryActivityStatus = async (repoId, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(repoId)) {
+    const error = new Error('Invalid repository ID format');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const repo = await Repository.findById(repoId).lean();
+
+  if (!repo) {
+    const error = new Error('Repository not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (repo.userId.toString() !== userId.toString()) {
+    const error = new Error('You are not authorized to access this repository');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return {
+    repoId: repo._id,
+    fullName: repo.fullName,
+    lastSyncedAt: repo.lastSyncedAt || null,
+    lastWebhookEventAt: repo.lastWebhookEventAt || null,
+    webhookEventCount: repo.webhookEventCount || 0,
+    updatedAt: repo.updatedAt || null
+  };
 };

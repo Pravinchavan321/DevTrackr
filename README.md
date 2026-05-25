@@ -128,6 +128,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 GITHUB_REDIRECT_URI=http://localhost:5000/api/github/callback
+GITHUB_WEBHOOK_SECRET=your_github_webhook_secret_here
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
 ENCRYPTION_SECRET=your_32_char_encryption_secret_here
@@ -140,7 +141,26 @@ NODE_ENV=development
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_GITHUB_CLIENT_ID=your_github_client_id
+VITE_REPO_ACTIVITY_POLL_INTERVAL_MS=15000
 ```
+
+## GitHub Webhooks
+
+DevTrackr includes a signed webhook endpoint at:
+
+```text
+POST http://localhost:5000/api/github/webhook
+```
+
+Configure `GITHUB_WEBHOOK_SECRET` in `backend/.env`, then create a GitHub repository webhook with content type `application/json` and the same secret. Use events for pushes, pull requests, pull request reviews, issues, and repository metadata.
+
+For local development, expose the backend through a public HTTPS tunnel such as ngrok and use:
+
+```text
+https://your-public-url/api/github/webhook
+```
+
+See `GITHUB_WEBHOOKS.md` for the full setup checklist.
 
 ## What to Do to Complete & Verify
 

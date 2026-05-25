@@ -10,6 +10,8 @@ const useRepoStore = create((set) => ({
   statusLoading: true,
   reposLoading: false,
   activeUserId: null,
+  repositoryActivityKey: null,
+  repositoryActivityVersion: 0,
 
   setRepos: (repos) => set({ repos }),
   
@@ -24,7 +26,7 @@ const useRepoStore = create((set) => ({
           localStorage.removeItem(key);
         }
       }
-      return { selectedRepo };
+      return { selectedRepo, repositoryActivityKey: null };
     }),
   
   setSyncing: (isSyncing) =>
@@ -48,6 +50,27 @@ const useRepoStore = create((set) => ({
 
   setActiveUserId: (activeUserId) =>
     set((state) => (state.activeUserId === activeUserId ? state : { activeUserId })),
+
+  setRepositoryActivitySnapshot: (activityKey, shouldNotify = false) =>
+    set((state) => {
+      if (state.repositoryActivityKey === activityKey) {
+        return state;
+      }
+
+      return {
+        repositoryActivityKey: activityKey,
+        repositoryActivityVersion: shouldNotify
+          ? state.repositoryActivityVersion + 1
+          : state.repositoryActivityVersion
+      };
+    }),
+
+  resetRepositoryActivitySnapshot: () =>
+    set((state) =>
+      state.repositoryActivityKey === null
+        ? state
+        : { repositoryActivityKey: null }
+    ),
   
   clearRepos: () =>
     set((state) => {
@@ -61,7 +84,8 @@ const useRepoStore = create((set) => ({
         isSyncing: false,
         rateLimitWarning: false,
         isConnected: false,
-        githubUsername: ''
+        githubUsername: '',
+        repositoryActivityKey: null
       };
     })
 }));

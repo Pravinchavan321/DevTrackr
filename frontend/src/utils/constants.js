@@ -14,6 +14,7 @@ export const API_ROUTES = {
     CONNECT: '/github/connect',
     CALLBACK: '/github/callback',
     REPOS: '/github/repos',
+    ACTIVITY_STATUS: (repoId) => `/github/repos/${repoId}/activity-status`,
     SYNC: (repoFullName) => `/github/repos/${encodeURIComponent(repoFullName)}/sync`,
     DISCONNECT: '/github/disconnect'
   },
@@ -38,4 +39,3 @@ export const API_ROUTES = {
 };
 
 export const DEFAULT_SPRINT_DAYS = 14;
-

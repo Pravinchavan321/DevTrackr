@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
   const isConnected = useRepoStore((state) => state.isConnected);
   const statusLoading = useRepoStore((state) => state.statusLoading);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   
   const {
     velocity,
@@ -66,7 +67,7 @@ export default function DashboardPage() {
     if (selectedRepo && selectedRepo._id) {
       loadDashboardData(selectedRepo._id);
     }
-  }, [selectedRepo, loadDashboardData]);
+  }, [selectedRepo, repositoryActivityVersion, loadDashboardData]);
 
   if (statusLoading) {
     return (

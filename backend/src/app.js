@@ -55,8 +55,14 @@ app.use(helmet());
 // CORS configuration
 app.use(cors(corsOptions));
 
+const captureWebhookRawBody = (req, res, buf) => {
+  if (req.originalUrl?.startsWith('/api/github/webhook')) {
+    req.rawBody = Buffer.from(buf);
+  }
+};
+
 // Body parser middleware
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb', verify: captureWebhookRawBody }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Cookie parser middleware

@@ -16,6 +16,7 @@ import SyncButton from '../components/dashboard/SyncButton';
  */
 export default function InsightsPage() {
   const selectedRepo = useRepoStore((state) => state.selectedRepo);
+  const repositoryActivityVersion = useRepoStore((state) => state.repositoryActivityVersion);
   const [focusedInsight, setFocusedInsight] = useState(null);
   const {
     loading,
@@ -35,7 +36,7 @@ export default function InsightsPage() {
     if (selectedRepo?._id) {
       fetchInsights(selectedRepo._id);
     }
-  }, [selectedRepo?._id, fetchInsights]);
+  }, [selectedRepo?._id, repositoryActivityVersion, fetchInsights]);
 
   useEffect(() => {
     if (!focusedInsight) return undefined;

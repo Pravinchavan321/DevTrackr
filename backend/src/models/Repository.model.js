@@ -56,6 +56,14 @@ const repositorySchema = new mongoose.Schema(
     lastSyncedAt: {
       type: Date,
       default: null
+    },
+    lastWebhookEventAt: {
+      type: Date,
+      default: null
+    },
+    webhookEventCount: {
+      type: Number,
+      default: 0
     }
   },
   {
