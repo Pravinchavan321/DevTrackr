@@ -16,6 +16,8 @@ const visualStats = [
   { label: 'Sprint', value: '94%', tone: 'emerald' }
 ];
 
+const barHeights = [34, 58, 45, 78, 62, 88, 72, 96, 82];
+
 export default function AuthLayout({
   children,
   title,
@@ -31,7 +33,11 @@ export default function AuthLayout({
   return (
     <main className="auth-shell min-h-screen overflow-hidden bg-gray-950 text-white">
       <section className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+
+        {/* ─── LEFT PANEL — 3D Illustration ─── */}
         <aside className="auth-hero relative hidden min-h-screen overflow-hidden px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-14">
+
+          {/* Top bar: logo + badge */}
           <div className="relative z-10 flex items-center justify-between">
             <Link to="/" className="group flex items-center gap-3" aria-label="Go to DevTrackr home">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-[0_12px_34px_rgba(124,58,237,0.32)] backdrop-blur-xl transition-transform duration-300 group-hover:-translate-y-0.5">
@@ -50,18 +56,27 @@ export default function AuthLayout({
             </div>
           </div>
 
+          {/* Tagline */}
           <div className="relative z-10 mx-auto flex w-full max-w-[620px] flex-1 flex-col justify-center py-10">
             <div className="mb-9 max-w-xl">
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-violet-200/80">
                 GitHub analytics meets sprint focus
               </p>
               <h1 className="max-w-lg text-5xl font-bold leading-[0.96] tracking-tight text-white xl:text-6xl">
-                Track repos, sprints, commits and AI insights in one workspace.
+                Track repos, sprints, commits{' '}
+                <span className="bg-gradient-to-r from-cyan-200 via-violet-200 to-emerald-200 bg-clip-text text-transparent">
+                  and AI insights
+                </span>{' '}
+                in one workspace.
               </h1>
             </div>
 
+            {/* ─── 3D Floating Illustration Stage ─── */}
             <div className="auth-hero-stage relative h-[430px] w-full">
+
+              {/* MAIN DASHBOARD CARD */}
               <div className="auth-dashboard-card auth-float-primary absolute left-1/2 top-1/2 w-[430px] -translate-x-1/2 -translate-y-1/2 rounded-[28px] border border-white/[0.12] bg-gray-950/[0.72] p-5 shadow-[0_42px_110px_rgba(3,7,18,0.78),0_0_70px_rgba(124,58,237,0.22)] backdrop-blur-2xl">
+                {/* Header row */}
                 <div className="mb-5 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">live sprint</p>
@@ -74,6 +89,7 @@ export default function AuthLayout({
                   </div>
                 </div>
 
+                {/* Stats row */}
                 <div className="mb-5 grid grid-cols-3 gap-3">
                   {visualStats.map((stat) => (
                     <div
@@ -86,6 +102,7 @@ export default function AuthLayout({
                   ))}
                 </div>
 
+                {/* Bar chart */}
                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.045] p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -97,9 +114,9 @@ export default function AuthLayout({
                     </span>
                   </div>
                   <div className="flex h-28 items-end gap-2">
-                    {[34, 58, 45, 78, 62, 88, 72, 96, 82].map((height, index) => (
+                    {barHeights.map((height, index) => (
                       <span
-                        key={height + index}
+                        key={height + '-' + index}
                         className="auth-chart-bar flex-1 rounded-t-lg"
                         style={{ height: `${height}%`, animationDelay: `${index * 80}ms` }}
                       />
@@ -107,6 +124,7 @@ export default function AuthLayout({
                   </div>
                 </div>
 
+                {/* AI insight */}
                 <div className="mt-4 rounded-2xl border border-violet-300/[0.12] bg-violet-300/[0.08] p-4">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-400/20 text-violet-100">
@@ -122,6 +140,7 @@ export default function AuthLayout({
                 </div>
               </div>
 
+              {/* FLOATING CARD — Repo commit log (left) */}
               <div className="auth-floating-card auth-float-secondary absolute left-0 top-14 w-56 rounded-2xl border border-white/[0.12] bg-gray-950/[0.68] p-4 shadow-[0_24px_60px_rgba(3,7,18,0.6)] backdrop-blur-xl">
                 <div className="mb-3 flex items-center gap-2 text-sm font-bold text-white">
                   <CodeBracketIcon className="h-5 w-5 text-cyan-200" />
@@ -134,6 +153,7 @@ export default function AuthLayout({
                 </div>
               </div>
 
+              {/* FLOATING CARD — Agent focus (right) */}
               <div className="auth-floating-card auth-float-tertiary absolute bottom-16 right-0 w-60 rounded-2xl border border-white/[0.12] bg-gray-950/70 p-4 shadow-[0_24px_70px_rgba(3,7,18,0.66)] backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <div>
@@ -147,21 +167,38 @@ export default function AuthLayout({
                   </span>
                 </div>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
-                  <div className="h-full w-[76%] rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300" />
+                  <div className="auth-progress-bar h-full w-[76%] rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300" />
+                </div>
+              </div>
+
+              {/* FLOATING CARD — Gemini powered pill (top-right of stage) */}
+              <div className="auth-floating-card auth-float-quaternary absolute -right-2 top-4 rounded-2xl border border-violet-300/20 bg-violet-300/[0.08] px-4 py-3 shadow-[0_16px_40px_rgba(124,58,237,0.16)] backdrop-blur-xl">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-[0_6px_20px_rgba(124,58,237,0.3)]">
+                    <SparklesIcon className="h-4 w-4 text-white" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-white">Gemini 2.5</p>
+                    <p className="text-[10px] font-medium text-violet-200/70">AI engine active</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Bottom tagline */}
           <div className="relative z-10 max-w-lg text-sm leading-6 text-gray-300/80">
             Premium reporting for developers who want sprint clarity without leaving their workflow.
           </div>
         </aside>
 
+        {/* ─── RIGHT PANEL — Form ─── */}
         <section className="relative flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-12">
           <div className="auth-form-backdrop absolute inset-0" aria-hidden="true" />
 
           <div className="relative z-10 w-full max-w-[470px]">
+
+            {/* Mobile logo (hidden on desktop) */}
             <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
               <Link to="/" className="flex items-center gap-3" aria-label="Go to DevTrackr home">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-[0_16px_36px_rgba(124,58,237,0.35)]">
@@ -171,6 +208,7 @@ export default function AuthLayout({
               </Link>
             </div>
 
+            {/* Form card */}
             <div className="auth-form-card rounded-[28px] border border-white/10 bg-gray-950/[0.72] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.52)] backdrop-blur-2xl sm:p-8">
               <div className="mb-8 text-center">
                 <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-300/20 bg-violet-300/10 text-violet-100 shadow-[0_16px_46px_rgba(124,58,237,0.26)]">

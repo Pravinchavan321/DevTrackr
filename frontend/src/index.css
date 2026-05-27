@@ -702,6 +702,15 @@ body {
   animation: auth-float-tertiary 7.5s ease-in-out infinite;
 }
 
+.auth-float-quaternary {
+  transform: perspective(700px) rotateY(-6deg) rotateX(3deg) translateZ(20px);
+  animation: auth-float-quaternary 8s ease-in-out infinite;
+}
+
+.auth-progress-bar {
+  animation: auth-progress-shimmer 2.5s ease-in-out infinite;
+}
+
 .auth-form-card {
   animation: auth-card-enter 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -798,6 +807,21 @@ body {
   }
 }
 
+@keyframes auth-float-quaternary {
+  0%, 100% {
+    transform: perspective(700px) rotateY(-6deg) rotateX(3deg) translateZ(20px) translateY(0);
+  }
+  50% {
+    transform: perspective(700px) rotateY(-4deg) rotateX(2deg) translateZ(20px) translateY(-10px);
+  }
+}
+
+@keyframes auth-progress-shimmer {
+  0% { opacity: 0.85; }
+  50% { opacity: 1; box-shadow: 0 0 18px rgba(34, 211, 238, 0.28); }
+  100% { opacity: 0.85; }
+}
+
 @keyframes auth-gradient-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -829,9 +853,11 @@ body {
   .auth-float-primary,
   .auth-float-secondary,
   .auth-float-tertiary,
+  .auth-float-quaternary,
   .auth-form-card,
   .auth-chart-bar,
   .auth-submit-button,
+  .auth-progress-bar,
   .app-shell .rotating-border-card,
   .insight-focus-item,
   .brand-orb-3d,
