@@ -17,7 +17,7 @@ const aiInsightSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ['sprint_summary', 'contributor_analysis', 'bottleneck', 'recommendations'],
+      enum: ['sprint_summary', 'contributor_analysis', 'bottleneck', 'recommendations', 'release_readiness', 'workload_health', 'sprint_retrospective'],
       index: true
     },
     period: {

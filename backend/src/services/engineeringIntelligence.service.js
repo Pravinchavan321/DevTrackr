@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Commit from '../models/Commit.model.js';
 import Issue from '../models/Issue.model.js';
 import PullRequest from '../models/PullRequest.model.js';
+import AIInsight from '../models/AIInsight.model.js';
 import { verifyRepositoryAccess } from './analytics.service.js';
 import * as geminiService from './gemini.service.js';
 import logger from '../config/logger.js';
@@ -25,6 +26,37 @@ const daysAgo = (days, from = new Date()) => {
   const date = new Date(from);
   date.setDate(date.getDate() - days);
   return date;
+};
+
+// ─── Cache helpers (same pattern as insight.service.js) ─────────────────────
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+const getCachedEngineeringInsight = async (repoId, userId, type) => {
+  return await AIInsight.findOne({
+    repoId: toObjectId(repoId),
+    userId: toObjectId(userId),
+    type,
+    expiresAt: { $gt: new Date() }
+  }).lean();
+};
+
+const saveEngineeringInsight = async (repoId, userId, type, parsedData) => {
+  const filter = {
+    repoId: toObjectId(repoId),
+    userId: toObjectId(userId),
+    type
+  };
+  const update = {
+    ...filter,
+    parsedData,
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    expiresAt: new Date(Date.now() + CACHE_TTL_MS),
+    generatedAt: new Date()
+  };
+  return await AIInsight.findOneAndUpdate(filter, update, {
+    upsert: true,
+    new: true
+  }).lean();
 };
 
 const contributorIdentityExpression = {
@@ -476,19 +508,73 @@ const applyRetrospectiveAiNarrative = async (repoFullName, retrospective, releas
   }
 };
 
-export const getReleaseReadiness = async (repoId, userId) => {
+export const getReleaseReadiness = async (repoId, userId, options = {}) => {
   const repo = await verifyRepositoryAccess(repoId, userId);
-  return buildReleaseReadiness(repo);
+  const force = options.force === true;
+
+  // Check MongoDB cache first
+  if (!force) {
+    const cached = await getCachedEngineeringInsight(repoId, userId, 'release_readiness');
+    if (cached) {
+      logger.debug('Serving cached release readiness', { repoId });
+      return { ...cached.parsedData, cached: true, generatedAt: cached.generatedAt };
+    }
+  }
+
+  const data = await buildReleaseReadiness(repo);
+
+  // Only cache if AI generation succeeded (not fallback)
+  if (data.aiGenerated !== false || !data.aiFallbackMessage) {
+    try {
+      await saveEngineeringInsight(repoId, userId, 'release_readiness', data);
+    } catch (err) {
+      logger.warn('Failed to cache release readiness', { error: err.message });
+    }
+  }
+
+  return data;
 };
 
-export const getWorkloadHealth = async (repoId, userId) => {
+export const getWorkloadHealth = async (repoId, userId, options = {}) => {
   const repo = await verifyRepositoryAccess(repoId, userId);
-  return buildWorkloadHealth(repo);
+  const force = options.force === true;
+
+  // Check MongoDB cache first
+  if (!force) {
+    const cached = await getCachedEngineeringInsight(repoId, userId, 'workload_health');
+    if (cached) {
+      logger.debug('Serving cached workload health', { repoId });
+      return { ...cached.parsedData, cached: true, generatedAt: cached.generatedAt };
+    }
+  }
+
+  const data = await buildWorkloadHealth(repo);
+
+  // Only cache if AI generation succeeded
+  if (data.aiGenerated !== false || !data.aiFallbackMessage) {
+    try {
+      await saveEngineeringInsight(repoId, userId, 'workload_health', data);
+    } catch (err) {
+      logger.warn('Failed to cache workload health', { error: err.message });
+    }
+  }
+
+  return data;
 };
 
 export const getSprintRetrospective = async (repoId, userId, options = {}) => {
   const repo = await verifyRepositoryAccess(repoId, userId);
   const rangeInfo = parseRetrospectiveRange(options.range);
+  const force = options.force === true;
+
+  // Check MongoDB cache first
+  if (!force) {
+    const cached = await getCachedEngineeringInsight(repoId, userId, 'sprint_retrospective');
+    if (cached) {
+      logger.debug('Serving cached sprint retrospective', { repoId });
+      return { ...cached.parsedData, cached: true, generatedAt: cached.generatedAt };
+    }
+  }
 
   const [metrics, releaseReadiness, workloadHealth] = await Promise.all([
     collectRetrospectiveMetrics(repo._id, rangeInfo),
@@ -511,7 +597,7 @@ export const getSprintRetrospective = async (repoId, userId, options = {}) => {
     workloadHealth
   );
 
-  return {
+  const result = {
     ...enhancedRetrospective,
     metrics: {
       ...enhancedRetrospective.metrics,
@@ -523,4 +609,15 @@ export const getSprintRetrospective = async (repoId, userId, options = {}) => {
     },
     generatedAt: new Date()
   };
+
+  // Only cache if AI generation succeeded
+  if (result.aiGenerated !== false || !result.aiFallbackMessage) {
+    try {
+      await saveEngineeringInsight(repoId, userId, 'sprint_retrospective', result);
+    } catch (err) {
+      logger.warn('Failed to cache sprint retrospective', { error: err.message });
+    }
+  }
+
+  return result;
 };
