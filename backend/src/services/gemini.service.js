@@ -17,9 +17,9 @@ const geminiNetworkErrorMessage =
 const MODEL_FALLBACK_CHAIN = [
   'gemini-2.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro',
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+  'gemini-pro-latest',
 ];
 
 /** Maximum total retries (across key/model combos) per logical request. */
